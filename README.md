@@ -48,9 +48,10 @@ User prompt → Orchestrator (stays active)
     ├─ (3) agent → Planner ............. create implementation plan
     ├─ (4) askQuestion → user .......... "Approve plan?"
     ├─ (5) agent → Implementer ......... write code
-    ├─ (6) agent → Code Reviewer ....... review implementation
-    ├─ (7) loop (5)-(6) if needed ...... fix issues automatically
-    └─ (8) askQuestion → user .......... "Done! What next?"
+    ├─ (6) agent → Tester .............. run tests + write new tests
+    ├─ (7) agent → Code Reviewer ....... review code + tests + results
+    ├─ (8) loop (5)-(7) if needed ...... fix issues automatically
+    └─ (9) askQuestion → user .......... "Done! What next?"
 ```
 
 **Zero handoff clicks.** All transitions are automated via subagent calls. User interaction happens only through `askQuestion` prompts.
@@ -64,7 +65,8 @@ User prompt → Orchestrator (stays active)
 | **Brainstormer** | Default | read, search, web, vscode | Discusses specs with user (via askQuestion) → Specification Report |
 | **Planner** | Claude Opus 4.6 | read, search, web, agent, todo | Creates detailed implementation plan (can call Analyzer) |
 | **Implementer** | GPT-5.4 | read, edit, search, execute, todo | Senior Engineer — executes plan precisely |
-| **Code Reviewer** | Claude Opus 4.6 | read, search, execute | Senior Engineer — reviews for correctness, bugs, security |
+| **Tester** | Claude Opus 4.6 | read, edit, search, execute, todo | Senior QA — runs tests, writes new tests, verifies correctness |
+| **Code Reviewer** | Claude Opus 4.6 | read, search, execute | Senior Engineer — reviews code + tests for correctness, bugs, security |
 
 ## User Interaction Points
 
@@ -74,8 +76,9 @@ User prompt → Orchestrator (stays active)
 | Brainstorming | Brainstormer asks questions via askQuestion | Answer questions, confirm specs |
 | Plan Review | Orchestrator shows plan, asks for approval | Click Approve / Adjust / Stop |
 | Implementation | Orchestrator calls Implementer | None (auto) |
+| Testing | Orchestrator calls Tester | None (auto) |
 | Code Review | Orchestrator calls Code Reviewer | None (auto) |
-| Fix Loop | Implementer ↔ Code Reviewer iterate | None (auto) |
+| Fix Loop | Implementer ↔ Tester ↔ Code Reviewer iterate | None (auto) |
 | Final Report | Orchestrator presents results | Acknowledge |
 
 ## Exception Handling
