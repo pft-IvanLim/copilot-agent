@@ -2,7 +2,7 @@
 name: Tester
 description: "Testing agent that runs existing tests, writes new tests for changed functionality, and verifies all tests pass. Use when: validating implementation correctness, catching regressions, or adding test coverage for new features."
 model: "Claude Opus 4.6 (copilot)"
-tools: [read, edit, search, execute, todo]
+tools: [read, edit, search, execute, web, todo]
 user-invocable: false
 ---
 

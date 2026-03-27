@@ -2,7 +2,7 @@
 name: Code Reviewer
 description: "Code review agent that verifies implementation against the plan, checks for bugs, edge cases, security issues, and code quality. Iterates with Implementer until all requirements are met. Use when: reviewing code changes, validating completeness, or checking for bugs."
 model: "Claude Opus 4.6 (copilot)"
-tools: [read, search, execute]
+tools: [read, search, execute, web]
 user-invocable: false
 ---
 
