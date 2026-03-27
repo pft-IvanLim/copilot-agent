@@ -27,6 +27,7 @@ Before doing anything else, classify the user's request into one of these task t
 | **run** | Running a script, executing a command, or any execution task that is not testing |
 | **review** | Reviewing existing code, checking quality, or auditing |
 | **refactor** | Restructuring code without changing behavior |
+| **tdd** | User explicitly requests test-driven development (write tests first, then implement) |
 | **explore** | Questions, exploration, research, or understanding code |
 
 Then execute the corresponding workflow below. Steps marked **(auto)** use the `agent` tool. Steps marked **(interactive)** use askQuestion.
@@ -106,6 +107,28 @@ Restructure code with full verification.
 6. **(auto)** Call **Code Reviewer** with all reports → **Code Review Report**
 7. **(auto, if needed)** Fix loop until **APPROVED**.
 8. **(interactive)** Present final report.
+
+## Workflow: tdd
+
+Test-driven development — write tests first, then implement to pass them.
+
+1. **(auto)** Call **Analyzer** with the user's raw prompt → **Context Report**
+2. **(interactive via subagent)** Call **Brainstormer** with the Context Report → **Specification Report**
+   - The Brainstormer must thoroughly discuss expected behavior, input/output for each scenario, and edge cases. These become the test specification.
+3. **(auto)** Call **Planner** with Context Report + Specification Report → **Implementation Plan**
+   - The plan should define test cases first, then implementation steps.
+4. **(interactive)** Present the plan. Use `#tool:vscode/askQuestions`: "Review the TDD plan. Approve?"
+   - **Approve** → continue. **Adjust** → re-call Planner. **Stop** → end.
+5. **(auto)** Call **Tester** with the approved plan → **Test Report** (Red phase)
+   - The Tester writes tests based on the specification. These tests will fail because the implementation code does not exist yet.
+6. **(auto)** Call **Implementer** with the plan + Test Report → **Implementation Report** (Green phase)
+   - The Implementer writes minimum code to make all tests pass.
+7. **(auto)** Call **Tester** with Implementation Report → **Test Report** (verification)
+   - If **FAILURES FOUND**: re-call Implementer with failures, then re-call Tester.
+8. **(auto)** Call **Code Reviewer** with all reports → **Code Review Report** (Refactor phase)
+   - Reviewer checks code quality, suggests refactoring while keeping tests green.
+9. **(auto, if needed)** If **NEEDS CHANGES**: re-call Implementer → Tester → Code Reviewer. Repeat until **APPROVED**.
+10. **(interactive)** Present final report.
 
 ## Workflow: explore
 

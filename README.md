@@ -51,6 +51,7 @@ User prompt → Orchestrator → Classify Task
     ├─ run      → Implementer (execute directly)
     ├─ review   → Analyze → Code Reviewer
     ├─ refactor → Analyze → Plan → Implement → Test → Review
+    ├─ tdd      → Analyze → Brainstorm → Plan → Tester (Red) → Implement (Green) → Test → Review
     └─ explore  → Analyze → Brainstorm
 ```
 
@@ -94,6 +95,7 @@ User prompt → Orchestrator (stays active)
 | **run** | Implementer | "Run script.py", "Execute this command" |
 | **review** | Analyze → Code Reviewer | "Review the auth module", "Check for security issues" |
 | **refactor** | Analyze → Plan → Implement → Test → Review | "Extract helper functions from utils.py", "Simplify the router" |
+| **tdd** | Analyze → Brainstorm → Plan → Tester(Red) → Implement(Green) → Test → Review | "Use TDD to add validation", "Test-driven: add discount calculator" |
 | **explore** | Analyze → Brainstorm | "How does the caching work?", "What's the data flow?" |
 
 ## Exception Handling
