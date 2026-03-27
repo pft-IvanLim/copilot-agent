@@ -81,7 +81,7 @@ User prompt → Orchestrator (stays active)
 
 | Agent | Model | Tools | Role |
 |-------|-------|-------|------|
-| **Orchestrator** | Default | agent, vscode, read, search | Central brain — classifies tasks, routes to subagents |
+| **Orchestrator** | Default | agent, vscode | Central brain — classifies tasks, routes to subagents |
 | **Analyzer** | Default | read, search, web, execute | Gathers codebase context → Context Report |
 | **Brainstormer** | Default | read, search, web, vscode | Discusses specs with user (via askQuestions) → Specification Report |
 | **Planner** | Claude Opus 4.6 | read, search, web, agent, todo | Creates detailed implementation plan (can call Analyzer) |
