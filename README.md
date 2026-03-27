@@ -2,6 +2,14 @@
 
 A multi-agent workflow for VS Code Copilot that automates the full development lifecycle with **smart task-based routing**. The Orchestrator classifies each request and picks the optimal workflow — no fixed pipeline.
 
+## Why Use This Agent Team
+
+- **Task-aware routing**: the Orchestrator picks a workflow based on the request instead of forcing every task through the same pipeline.
+- **Cleaner context windows**: specialized subagents work in isolated contexts, which reduces prompt bloat and keeps each step focused.
+- **Better quality control**: implementation, testing, and review are separated into distinct roles, so each stage checks the previous one.
+- **Stronger tool boundaries**: each agent only gets the tools it needs, which improves reliability and reduces accidental misuse.
+- **Supports real development workflows**: feature work, bug fixes, test-only tasks, reviews, refactors, TDD, exploration, and command execution are all handled explicitly.
+
 ## Quick Start
 
 ### 1. Clone
@@ -16,14 +24,10 @@ Create a symbolic link from your project's `.github/agents/` to this repo's agen
 
 ```bash
 # From your project root
-ln -s /path/to/copilot-agent/agents .github/agents
+ln -s <copilot-agent-path>/agents .github/agents
 ```
 
-Or copy the files directly:
-
-```bash
-cp -r /path/to/copilot-agent/agents/*.agent.md .github/agents/
-```
+Replace `<copilot-agent-path>` with the local path to this repository.
 
 ### 3. Select Orchestrator
 
