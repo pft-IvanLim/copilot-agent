@@ -7,7 +7,7 @@ A multi-agent workflow for VS Code Copilot that automates the full development l
 ### 1. Clone
 
 ```bash
-git clone <repo-url> copilot-agent
+git clone https://github.com/pft-IvanLim/copilot-agent.git
 ```
 
 ### 2. Symlink into your workspace
