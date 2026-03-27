@@ -1,6 +1,6 @@
 # Copilot Agent Team
 
-A multi-agent workflow for VS Code Copilot that automates the full development lifecycle: analysis → brainstorming → planning → implementation → code review.
+A multi-agent workflow for VS Code Copilot that automates the full development lifecycle with **smart task-based routing**. The Orchestrator classifies each request and picks the optimal workflow — no fixed pipeline.
 
 ## Quick Start
 
@@ -32,13 +32,29 @@ cp -r /path/to/copilot-agent/agents/*.agent.md .github/agents/
 3. Select **"Orchestrator"**
 4. Type your task and press Enter
 
-The Orchestrator will automatically manage the full workflow.
+The Orchestrator will classify your task and route to the right agents automatically.
 
 ---
 
 ## Architecture
 
-The **Orchestrator** is the central brain. It stays active throughout the entire workflow, calling specialized sub-agents automatically via the `agent` tool and using `askQuestion` for user checkpoints.
+The **Orchestrator** is the central brain. It classifies each task and selects the optimal workflow, calling specialized sub-agents via the `agent` tool and using `askQuestion` for user checkpoints.
+
+### Smart Routing
+
+```
+User prompt → Orchestrator → Classify Task
+    │
+    ├─ feature  → Analyze → Brainstorm → Plan → Implement → Test → Review
+    ├─ bugfix   → Analyze → Plan → Implement → Test → Review
+    ├─ test     → Analyze → Tester → Review
+    ├─ run      → Implementer (execute directly)
+    ├─ review   → Analyze → Code Reviewer
+    ├─ refactor → Analyze → Plan → Implement → Test → Review
+    └─ explore  → Analyze → Brainstorm
+```
+
+### Feature Workflow (full pipeline)
 
 ```
 User prompt → Orchestrator (stays active)
@@ -60,30 +76,27 @@ User prompt → Orchestrator (stays active)
 
 | Agent | Model | Tools | Role |
 |-------|-------|-------|------|
-| **Orchestrator** | Default | agent, vscode, read, search | Central brain — calls subagents, manages workflow |
+| **Orchestrator** | Default | agent, vscode, read, search | Central brain — classifies tasks, routes to subagents |
 | **Analyzer** | Default | read, search, web, execute | Gathers codebase context → Context Report |
 | **Brainstormer** | Default | read, search, web, vscode | Discusses specs with user (via askQuestion) → Specification Report |
 | **Planner** | Claude Opus 4.6 | read, search, web, agent, todo | Creates detailed implementation plan (can call Analyzer) |
-| **Implementer** | GPT-5.4 | read, edit, search, execute, todo | Senior Engineer — executes plan precisely |
-| **Tester** | Claude Opus 4.6 | read, edit, search, execute, todo | Senior QA — runs tests, writes new tests, verifies correctness |
+| **Implementer** | GPT-5.4 | read, edit, search, execute, todo | Senior Engineer — writes production code |
+| **Tester** | Claude Opus 4.6 | read, edit, search, execute, todo | Senior QA — sole owner of all test code, runs and writes tests |
 | **Code Reviewer** | Claude Opus 4.6 | read, search, execute | Senior Engineer — reviews code + tests for correctness, bugs, security |
 
-## User Interaction Points
+## Task Routing
 
-| Step | What Happens | User Action |
-|------|-------------|-------------|
-| Analysis | Orchestrator calls Analyzer | None (auto) |
-| Brainstorming | Brainstormer asks questions via askQuestion | Answer questions, confirm specs |
-| Plan Review | Orchestrator shows plan, asks for approval | Click Approve / Adjust / Stop |
-| Implementation | Orchestrator calls Implementer | None (auto) |
-| Testing | Orchestrator calls Tester | None (auto) |
-| Code Review | Orchestrator calls Code Reviewer | None (auto) |
-| Fix Loop | Implementer ↔ Tester ↔ Code Reviewer iterate | None (auto) |
-| Final Report | Orchestrator presents results | Acknowledge |
+| Task Type | Agents Used | Example Prompts |
+|-----------|-------------|-----------------|
+| **feature** | All agents | "Add a dark mode toggle", "Implement user authentication" |
+| **bugfix** | Analyze → Plan → Implement → Test → Review | "Fix the login timeout error", "Users can't save settings" |
+| **test** | Analyze → Tester → Review | "Add unit tests for the API module", "Run the test suite" |
+| **run** | Implementer | "Run script.py", "Execute this command" |
+| **review** | Analyze → Code Reviewer | "Review the auth module", "Check for security issues" |
+| **refactor** | Analyze → Plan → Implement → Test → Review | "Extract helper functions from utils.py", "Simplify the router" |
+| **explore** | Analyze → Brainstorm | "How does the caching work?", "What's the data flow?" |
 
 ## Exception Handling
-
-If any subagent gets stuck, the Orchestrator handles it:
 
 | Problem | Orchestrator Action |
 |---------|-------------------|
@@ -91,3 +104,4 @@ If any subagent gets stuck, the Orchestrator handles it:
 | Ambiguous specs | Re-calls Brainstormer for clarification |
 | Plan needs revision | Re-calls Planner with updated context |
 | Implementation blocked | Asks user via askQuestion |
+| Tests failing repeatedly | Presents failure details to user via askQuestion |
