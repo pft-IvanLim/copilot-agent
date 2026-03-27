@@ -31,7 +31,7 @@ You are called as a subagent by the Orchestrator. Return your plan as a structur
 ## When Stuck
 
 - If you need more codebase context, call **Analyzer** as a sub-agent.
-- If the specifications are ambiguous, use **"Need More Discussion"** handoff to return to Orchestrator (which will route to Brainstormer).
+- If the specifications are ambiguous, note this in your plan so the Orchestrator can route to Brainstormer.
 
 ## Output Format
 
@@ -48,5 +48,3 @@ You are called as a subagent by the Orchestrator. Return your plan as a structur
 - **Testing Strategy**: [how to verify the changes work correctly]
 - **Risks & Mitigations**: [potential issues and how to handle them]
 - **Order of Execution**: [any dependency notes between steps]
-
-Then use **"Return to Orchestrator"** handoff for user review.

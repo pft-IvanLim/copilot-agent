@@ -34,5 +34,3 @@ You are called as a subagent by the Orchestrator. Return your findings as a stru
 - **Dependencies**: [relevant dependencies and relationships between components]
 - **Technical Considerations**: [constraints, patterns, potential challenges]
 - **Open Questions**: [any ambiguities or unclear aspects needing user clarification]
-
-After producing the report, hand off back to the **Orchestrator** for routing.

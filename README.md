@@ -38,7 +38,7 @@ The Orchestrator will classify your task and route to the right agents automatic
 
 ## Architecture
 
-The **Orchestrator** is the central brain. It classifies each task and selects the optimal workflow, calling specialized sub-agents via the `agent` tool and using `askQuestion` for user checkpoints.
+The **Orchestrator** is the central brain. It classifies each task and selects the optimal workflow, calling specialized sub-agents via the `agent` tool and using `askQuestions` for user checkpoints.
 
 ### Smart Routing
 
@@ -60,18 +60,18 @@ User prompt → Orchestrator → Classify Task
 ```
 User prompt → Orchestrator (stays active)
     │
-    ├─ (1) agent → Analyzer ............ gather codebase context
-    ├─ (2) agent → Brainstormer ........ discuss specs with user (via askQuestion)
-    ├─ (3) agent → Planner ............. create implementation plan
-    ├─ (4) askQuestion → user .......... "Approve plan?"
-    ├─ (5) agent → Implementer ......... write code
-    ├─ (6) agent → Tester .............. run tests + write new tests
-    ├─ (7) agent → Code Reviewer ....... review code + tests + results
-    ├─ (8) loop (5)-(7) if needed ...... fix issues automatically
-    └─ (9) askQuestion → user .......... "Done! What next?"
+    ├─ (1) agent → Analyzer ............. gather codebase context
+    ├─ (2) agent → Brainstormer ......... discuss specs with user (via askQuestions)
+    ├─ (3) agent → Planner .............. create implementation plan
+    ├─ (4) askQuestions → user .......... "Approve plan?"
+    ├─ (5) agent → Implementer .......... write code
+    ├─ (6) agent → Tester ............... run tests + write new tests
+    ├─ (7) agent → Code Reviewer ........ review code + tests + results
+    ├─ (8) loop (5)-(7) if needed ....... fix issues automatically
+    └─ (9) askQuestions → user .......... "Done! What next?"
 ```
 
-**Zero handoff clicks.** All transitions are automated via subagent calls. User interaction happens only through `askQuestion` prompts.
+**Zero handoff clicks.** All transitions are automated via subagent calls. User interaction happens only through `askQuestions` prompts.
 
 ## Agents
 
@@ -79,7 +79,7 @@ User prompt → Orchestrator (stays active)
 |-------|-------|-------|------|
 | **Orchestrator** | Default | agent, vscode, read, search | Central brain — classifies tasks, routes to subagents |
 | **Analyzer** | Default | read, search, web, execute | Gathers codebase context → Context Report |
-| **Brainstormer** | Default | read, search, web, vscode | Discusses specs with user (via askQuestion) → Specification Report |
+| **Brainstormer** | Default | read, search, web, vscode | Discusses specs with user (via askQuestions) → Specification Report |
 | **Planner** | Claude Opus 4.6 | read, search, web, agent, todo | Creates detailed implementation plan (can call Analyzer) |
 | **Implementer** | GPT-5.4 | read, edit, search, execute, todo | Senior Engineer — writes production code |
 | **Tester** | Claude Opus 4.6 | read, edit, search, execute, todo | Senior QA — sole owner of all test code, runs and writes tests |
@@ -105,5 +105,5 @@ User prompt → Orchestrator (stays active)
 | Missing context | Re-calls Analyzer with specific questions |
 | Ambiguous specs | Re-calls Brainstormer for clarification |
 | Plan needs revision | Re-calls Planner with updated context |
-| Implementation blocked | Asks user via askQuestion |
-| Tests failing repeatedly | Presents failure details to user via askQuestion |
+| Implementation blocked | Asks user via askQuestions |
+| Tests failing repeatedly | Presents failure details to user via askQuestions |
