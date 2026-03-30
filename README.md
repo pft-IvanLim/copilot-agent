@@ -51,13 +51,13 @@ flowchart LR
     A["🧑 User Prompt"] --> B["🎯 Orchestrator"]
     B --> C{"Classify Task"}
 
-    C -- "feature" --> F1["Analyze → Brainstorm → Plan → Implement → Test → Review"]
-    C -- "bugfix" --> F2["Analyze → Plan → Implement → Test → Review"]
-    C -- "test" --> F3["Analyze → Tester → Review"]
-    C -- "run" --> F4["Implementer"]
-    C -- "review" --> F5["Analyze → Code Reviewer"]
-    C -- "refactor" --> F6["Analyze → Plan → Implement → Test → Review"]
-    C -- "tdd" --> F7["Analyze → Brainstorm → Plan → Tester 🔴 → Implement 🟢 → Test → Review"]
+    C -- "feature" --> F1["Analyze → Brainstorm → Plan → Approve → Implement → Test → Review"]
+    C -- "bugfix" --> F2["Analyze → Plan → Approve → Implement → Test → Review"]
+    C -- "test" --> F3["Analyze → Test → Review"]
+    C -- "run" --> F4["Implement"]
+    C -- "review" --> F5["Analyze → Review"]
+    C -- "refactor" --> F6["Analyze → Plan → Approve → Implement → Test → Review"]
+    C -- "tdd" --> F7["Analyze → Brainstorm → Plan → Approve → Test(Red) → Implement(Green) → Test → Review"]
     C -- "explore" --> F8["Analyze → Brainstorm"]
     C -- "general" --> F9["General"]
 
@@ -89,7 +89,7 @@ flowchart TD
     G --> H["6️⃣ Tester\n<i>run & write tests</i>"]
     H --> I["7️⃣ Code Reviewer\n<i>review code + tests</i>"]
     I -- "issues found" --> G
-    I -- "approved" --> J{{"9️⃣ askQuestions\n&quot;Done! What next?&quot;"}}
+    I -- "approved" --> J{{"8️⃣ askQuestions\n&quot;Done! What next?&quot;"}}
 
     style A fill:#4CAF50,stroke:#388E3C,color:#fff
     style B fill:#2196F3,stroke:#1565C0,color:#fff
@@ -109,36 +109,37 @@ flowchart TD
 
 | Agent | Model | Tools | Role |
 |-------|-------|-------|------|
-| **Orchestrator** | Claude Opus 4.6 | agent, vscode | Central brain — classifies tasks, routes to subagents |
+| **Orchestrator** | Claude Opus 4.6 | agent, vscode, read | Central brain — classifies tasks, routes to subagents |
 | **Analyzer** | Claude Opus 4.6 | read, search, web, execute | Gathers codebase context → Context Report |
 | **Brainstormer** | Claude Opus 4.6 | read, search, web, vscode | Discusses specs with user (via askQuestions) → Specification Report |
 | **Planner** | Claude Opus 4.6 | read, search, web, agent, todo | Creates detailed implementation plan (can call Analyzer) |
 | **Implementer** | GPT-5.4 | read, edit, search, execute, web, todo | Senior Engineer — writes production code |
 | **Tester** | Claude Opus 4.6 | read, edit, search, execute, web, todo | Senior QA — sole owner of all test code, runs and writes tests |
 | **Code Reviewer** | Claude Opus 4.6 | read, search, execute, web | Senior Engineer — reviews code + tests for correctness, bugs, security |
-| **General** | Claude Opus 4.6 | read, edit, search, execute, web, todo | Lightweight all-purpose agent for simple tasks; escalates if scope exceeds single-file |
+| **General** | Claude Opus 4.6 | read, edit, search, execute, web, todo | Lightweight all-purpose agent for simple tasks, quick questions, atomic edits |
 
 ## Task Routing
 
-| Task Type | Agents Used | Example Prompts |
-|-----------|-------------|-----------------|
-| **feature** | All agents | "Add a dark mode toggle", "Implement user authentication" |
-| **bugfix** | Analyze → Plan → Implement → Test → Review | "Fix the login timeout error", "Users can't save settings" |
-| **test** | Analyze → Tester → Review | "Add unit tests for the API module", "Run the test suite" |
-| **run** | Implementer | "Run script.py", "Execute this command" |
-| **review** | Analyze → Code Reviewer | "Review the auth module", "Check for security issues" |
-| **refactor** | Analyze → Plan → Implement → Test → Review | "Extract helper functions from utils.py", "Simplify the router" |
-| **tdd** | Analyze → Brainstorm → Plan → Tester(Red) → Implement(Green) → Test → Review | "Use TDD to add validation", "Test-driven: add discount calculator" |
-| **explore** | Analyze → Brainstorm | "How does the caching work?", "What's the data flow?" |
-| **general** | General | "What does this function do?", "Fix this typo", "Explain this error" |
+| Task Type | Phases | Example Prompts |
+|-----------|--------|-----------------|
+| **feature** | Analyze → Brainstorm → Plan → Approve → Implement → Test → Review → Present | "Add a dark mode toggle", "Implement user authentication" |
+| **bugfix** | Analyze → Plan → Approve → Implement → Test → Review → Present | "Fix the login timeout error", "Users can't save settings" |
+| **test** | Analyze → Test → Review → Present | "Add unit tests for the API module", "Run the test suite" |
+| **run** | Implement → Present | "Run script.py", "Execute this command" |
+| **review** | Analyze → Review → Present | "Review the auth module", "Check for security issues" |
+| **refactor** | Analyze → Plan → Approve → Implement → Test → Review → Present | "Extract helper functions from utils.py", "Simplify the router" |
+| **tdd** | Analyze → Brainstorm → Plan → Approve → Test(Red) → Implement(Green) → Test → Review → Present | "Use TDD to add validation", "Test-driven: add discount calculator" |
+| **explore** | Analyze → Brainstorm → Present | "How does the caching work?", "What's the data flow?" |
+| **general** | General → Present | "What does this function do?", "Fix this typo", "What port does this run on?" |
 
 ## Exception Handling
 
 | Problem | Orchestrator Action |
 |---------|-------------------|
-| General escalation | Re-classifies using General's recommended route |
-| Missing context | Re-calls Analyzer with specific questions |
-| Ambiguous specs | Re-calls Brainstormer for clarification |
-| Plan needs revision | Re-calls Planner with updated context |
-| Implementation blocked | Asks user via askQuestions |
-| Tests failing repeatedly | Presents failure details to user via askQuestions |
+| Missing context | Re-calls Analyzer |
+| Ambiguous specs | Re-calls Brainstormer |
+| Plan needs revision | Re-calls Planner |
+| Blocked / Tests failing | Asks user via askQuestions |
+| Sub-agent output in a file | Reads the file directly with the read tool |
+| User asks to run/execute | Re-classifies as `run` → Implement |
+| Follow-up after workflow | Re-classifies from Step 0 |
