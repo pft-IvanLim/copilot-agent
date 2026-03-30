@@ -27,7 +27,7 @@ Create a symbolic link from your project's `.github/agents/` to this repo's agen
 ln -s <copilot-agent-path>/agents .github/agents
 ```
 
-Replace `<copilot-agent-path>` with the local path to this repository.
+Replace `<copilot-agent-path>` with the **absolute path** to this repository (e.g. `/home/user/copilot-agent`).
 
 ### 3. Select Orchestrator
 
