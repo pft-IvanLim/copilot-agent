@@ -1,6 +1,7 @@
 ---
 name: Orchestrator
 description: "Central coordinator agent that receives user requests and intelligently routes them to specialized sub-agents. Use when: starting any new task, feature request, bug fix, or question. This agent manages the entire workflow, deciding which agent to invoke next based on the current conversation state."
+model: "Claude Opus 4.6 (copilot)"
 tools: [agent, vscode]
 agents: [Analyzer, Brainstormer, Planner, Implementer, Tester, Code Reviewer]
 ---

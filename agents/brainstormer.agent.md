@@ -1,6 +1,7 @@
 ---
 name: Brainstormer
 description: "Interactive discussion agent that deeply explores requirements, specifications, and edge cases with the user. Continues multi-turn discussion until the user explicitly confirms all details. Use when: clarifying requirements, discussing technical approaches, or refining specifications."
+model: "Claude Opus 4.6 (copilot)"
 tools: [read, search, web, vscode]
 user-invocable: false
 ---

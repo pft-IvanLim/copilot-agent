@@ -1,6 +1,7 @@
 ---
 name: Analyzer
 description: "Codebase analysis agent that gathers comprehensive context including code, documentation, and project structure. Produces a detailed context report for downstream agents. Use when: analyzing a user request, exploring codebase, or gathering technical context before planning."
+model: "Claude Opus 4.6 (copilot)"
 tools: [read, search, web, execute]
 user-invocable: false
 ---
