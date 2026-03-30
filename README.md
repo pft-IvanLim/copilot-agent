@@ -46,33 +46,59 @@ The **Orchestrator** is the central brain. It classifies each task and selects t
 
 ### Smart Routing
 
-```
-User prompt → Orchestrator → Classify Task
-    │
-    ├─ feature  → Analyze → Brainstorm → Plan → Implement → Test → Review
-    ├─ bugfix   → Analyze → Plan → Implement → Test → Review
-    ├─ test     → Analyze → Tester → Review
-    ├─ run      → Implementer (execute directly)
-    ├─ review   → Analyze → Code Reviewer
-    ├─ refactor → Analyze → Plan → Implement → Test → Review
-    ├─ tdd      → Analyze → Brainstorm → Plan → Tester (Red) → Implement (Green) → Test → Review
-    └─ explore  → Analyze → Brainstorm
+```mermaid
+flowchart LR
+    A["🧑 User Prompt"] --> B["🎯 Orchestrator"]
+    B --> C{"Classify Task"}
+
+    C -- "feature" --> F1["Analyze → Brainstorm → Plan → Implement → Test → Review"]
+    C -- "bugfix" --> F2["Analyze → Plan → Implement → Test → Review"]
+    C -- "test" --> F3["Analyze → Tester → Review"]
+    C -- "run" --> F4["Implementer"]
+    C -- "review" --> F5["Analyze → Code Reviewer"]
+    C -- "refactor" --> F6["Analyze → Plan → Implement → Test → Review"]
+    C -- "tdd" --> F7["Analyze → Brainstorm → Plan → Tester 🔴 → Implement 🟢 → Test → Review"]
+    C -- "explore" --> F8["Analyze → Brainstorm"]
+
+    style A fill:#4CAF50,stroke:#388E3C,color:#fff
+    style B fill:#2196F3,stroke:#1565C0,color:#fff
+    style C fill:#FF9800,stroke:#EF6C00,color:#fff
+    style F1 fill:#E3F2FD,stroke:#90CAF9
+    style F2 fill:#E3F2FD,stroke:#90CAF9
+    style F3 fill:#E3F2FD,stroke:#90CAF9
+    style F4 fill:#E3F2FD,stroke:#90CAF9
+    style F5 fill:#E3F2FD,stroke:#90CAF9
+    style F6 fill:#E3F2FD,stroke:#90CAF9
+    style F7 fill:#E3F2FD,stroke:#90CAF9
+    style F8 fill:#E3F2FD,stroke:#90CAF9
 ```
 
 ### Feature Workflow (full pipeline)
 
-```
-User prompt → Orchestrator (stays active)
-    │
-    ├─ (1) agent → Analyzer ............. gather codebase context
-    ├─ (2) agent → Brainstormer ......... discuss specs with user (via askQuestions)
-    ├─ (3) agent → Planner .............. create implementation plan
-    ├─ (4) askQuestions → user .......... "Approve plan?"
-    ├─ (5) agent → Implementer .......... write code
-    ├─ (6) agent → Tester ............... run tests + write new tests
-    ├─ (7) agent → Code Reviewer ........ review code + tests + results
-    ├─ (8) loop (5)-(7) if needed ....... fix issues automatically
-    └─ (9) askQuestions → user .......... "Done! What next?"
+```mermaid
+flowchart TD
+    A["🧑 User Prompt"] --> B["🎯 Orchestrator"]
+    
+    B --> C["1️⃣ Analyzer\n<i>gather codebase context</i>"]
+    C --> D["2️⃣ Brainstormer\n<i>discuss specs with user</i>"]
+    D --> E["3️⃣ Planner\n<i>create implementation plan</i>"]
+    E --> F{{"4️⃣ askQuestions\n&quot;Approve plan?&quot;"}}
+    F --> G["5️⃣ Implementer\n<i>write code</i>"]
+    G --> H["6️⃣ Tester\n<i>run & write tests</i>"]
+    H --> I["7️⃣ Code Reviewer\n<i>review code + tests</i>"]
+    I -- "issues found" --> G
+    I -- "approved" --> J{{"9️⃣ askQuestions\n&quot;Done! What next?&quot;"}}
+
+    style A fill:#4CAF50,stroke:#388E3C,color:#fff
+    style B fill:#2196F3,stroke:#1565C0,color:#fff
+    style C fill:#E8F5E9,stroke:#66BB6A
+    style D fill:#FFF3E0,stroke:#FFA726
+    style E fill:#E3F2FD,stroke:#42A5F5
+    style F fill:#FCE4EC,stroke:#EF5350
+    style G fill:#E8EAF6,stroke:#5C6BC0
+    style H fill:#F3E5F5,stroke:#AB47BC
+    style I fill:#FFF8E1,stroke:#FFB300
+    style J fill:#FCE4EC,stroke:#EF5350
 ```
 
 **Zero handoff clicks.** All transitions are automated via subagent calls. User interaction happens only through `askQuestions` prompts.
