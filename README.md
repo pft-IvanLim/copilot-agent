@@ -59,6 +59,7 @@ flowchart LR
     C -- "refactor" --> F6["Analyze → Plan → Implement → Test → Review"]
     C -- "tdd" --> F7["Analyze → Brainstorm → Plan → Tester 🔴 → Implement 🟢 → Test → Review"]
     C -- "explore" --> F8["Analyze → Brainstorm"]
+    C -- "general" --> F9["General"]
 
     style A fill:#4CAF50,stroke:#388E3C,color:#fff
     style B fill:#2196F3,stroke:#1565C0,color:#fff
@@ -71,6 +72,7 @@ flowchart LR
     style F6 fill:#E3F2FD,stroke:#90CAF9
     style F7 fill:#E3F2FD,stroke:#90CAF9
     style F8 fill:#E3F2FD,stroke:#90CAF9
+    style F9 fill:#E3F2FD,stroke:#90CAF9
 ```
 
 ### Feature Workflow (full pipeline)
@@ -114,6 +116,7 @@ flowchart TD
 | **Implementer** | GPT-5.4 | read, edit, search, execute, web, todo | Senior Engineer — writes production code |
 | **Tester** | Claude Opus 4.6 | read, edit, search, execute, web, todo | Senior QA — sole owner of all test code, runs and writes tests |
 | **Code Reviewer** | Claude Opus 4.6 | read, search, execute, web | Senior Engineer — reviews code + tests for correctness, bugs, security |
+| **General** | Claude Opus 4.6 | read, edit, search, execute, web, todo | Lightweight all-purpose agent for simple tasks; escalates if scope exceeds single-file |
 
 ## Task Routing
 
@@ -127,11 +130,13 @@ flowchart TD
 | **refactor** | Analyze → Plan → Implement → Test → Review | "Extract helper functions from utils.py", "Simplify the router" |
 | **tdd** | Analyze → Brainstorm → Plan → Tester(Red) → Implement(Green) → Test → Review | "Use TDD to add validation", "Test-driven: add discount calculator" |
 | **explore** | Analyze → Brainstorm | "How does the caching work?", "What's the data flow?" |
+| **general** | General | "What does this function do?", "Fix this typo", "Explain this error" |
 
 ## Exception Handling
 
 | Problem | Orchestrator Action |
 |---------|-------------------|
+| General escalation | Re-classifies using General's recommended route |
 | Missing context | Re-calls Analyzer with specific questions |
 | Ambiguous specs | Re-calls Brainstormer for clarification |
 | Plan needs revision | Re-calls Planner with updated context |
