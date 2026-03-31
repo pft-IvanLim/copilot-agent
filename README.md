@@ -141,5 +141,6 @@ flowchart TD
 | Plan needs revision | Re-calls Planner |
 | Blocked / Tests failing | Asks user via askQuestions |
 | Sub-agent output in a file | Reads the file directly with the read tool |
+| Sub-agent fails / empty / timeout | Retries once, then asks user |
 | User asks to run/execute | Re-classifies as `run` → Implement |
 | Follow-up after workflow | Re-classifies from Step 0 |

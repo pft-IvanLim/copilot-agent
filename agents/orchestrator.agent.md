@@ -60,5 +60,6 @@ Re-classify on every new message, including follow-ups. "Now run it" = new `run`
 | Plan needs revision | Re-call **Planner** |
 | Blocked / Tests failing | Ask user via `#tool:vscode/askQuestions` |
 | Sub-agent output in a file | Read the file directly with the read tool and present contents |
+| Sub-agent fails / empty / timeout | Retry the SAME sub-agent once. If still fails, ask user via `#tool:vscode/askQuestions`. NEVER absorb the failed agent's work yourself. |
 | User asks to run/execute | `run` → **Implementer** |
 | Follow-up after workflow | Re-classify from Step 0 |
