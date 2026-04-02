@@ -54,7 +54,7 @@ flowchart LR
     C -- "feature" --> F1["Analyze → Brainstorm → Plan → Approve → Implement → Test → Review"]
     C -- "bugfix" --> F2["Analyze → Plan → Approve → Implement → Test → Review"]
     C -- "test" --> F3["Analyze → Test → Review"]
-    C -- "run" --> F4["Implement"]
+    C -- "run" --> F4["Plan → Implement"]
     C -- "review" --> F5["Analyze → Review"]
     C -- "refactor" --> F6["Analyze → Plan → Approve → Implement → Test → Review"]
     C -- "tdd" --> F7["Analyze → Brainstorm → Plan → Approve → Test(Red) → Implement(Green) → Test → Review"]
@@ -125,7 +125,7 @@ flowchart TD
 | **feature** | Analyze → Brainstorm → Plan → Approve → Implement → Test → Review → Present | "Add a dark mode toggle", "Implement user authentication" |
 | **bugfix** | Analyze → Plan → Approve → Implement → Test → Review → Present | "Fix the login timeout error", "Users can't save settings" |
 | **test** | Analyze → Test → Review → Present | "Add unit tests for the API module", "Run the test suite" |
-| **run** | Implement → Present | "Run script.py", "Execute this command" |
+| **run** | Plan → Implement → Present | "Run script.py", "Execute this command" |
 | **review** | Analyze → Review → Present | "Review the auth module", "Check for security issues" |
 | **refactor** | Analyze → Plan → Approve → Implement → Test → Review → Present | "Extract helper functions from utils.py", "Simplify the router" |
 | **tdd** | Analyze → Brainstorm → Plan → Approve → Test(Red) → Implement(Green) → Test → Review → Present | "Use TDD to add validation", "Test-driven: add discount calculator" |
