@@ -1,7 +1,7 @@
 ---
 name: Implementer
 description: "Code implementation agent that executes implementation plans by writing, editing, and testing code. Follows plans precisely and tracks progress. Use when: implementing code changes, creating files, running commands, or executing development tasks."
-model: "GPT-5.4 (copilot)"
+model: "Claude Opus 4.6 (copilot)"
 tools: [read, edit, search, execute, web, todo]
 user-invocable: false
 ---
