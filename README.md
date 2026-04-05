@@ -51,15 +51,16 @@ flowchart LR
     A["🧑 User Prompt"] --> B["🎯 Orchestrator"]
     B --> C{"Classify Task"}
 
-    C -- "feature" --> F1["Analyze → Brainstorm → Plan → Approve → Implement → Test → Review"]
-    C -- "bugfix" --> F2["Analyze → Plan → Approve → Implement → Test → Review"]
-    C -- "test" --> F3["Analyze → Test → Review"]
-    C -- "run" --> F4["Plan → Implement → (Test → Review if files changed)"]
-    C -- "review" --> F5["Analyze → Review"]
-    C -- "refactor" --> F6["Analyze → Plan → Approve → Implement → Test → Review"]
-    C -- "tdd" --> F7["Analyze → Brainstorm → Plan → Approve → Test(Red) → Implement(Green) → Test → Review"]
-    C -- "explore" --> F8["Analyze → Brainstorm"]
-    C -- "general" --> F9["General"]
+    C -- "feature" --> F1["Memory → Analyze → Brainstorm → Plan → Approve → Implement → Test → Review"]
+    C -- "bugfix" --> F2["Memory → Analyze → Plan → Approve → Implement → Test → Review"]
+    C -- "test" --> F3["Memory → Analyze → Test → Review"]
+    C -- "run" --> F4["Memory → Plan → Implement → (Test → Review if files changed)"]
+    C -- "review" --> F5["Memory → Analyze → Review"]
+    C -- "refactor" --> F6["Memory → Analyze → Plan → Approve → Implement → Test → Review"]
+    C -- "tdd" --> F7["Memory → Analyze → Brainstorm → Plan → Approve → Test(Red) → Implement(Green) → Test → Review"]
+    C -- "explore" --> F8["Memory → Analyze → Brainstorm"]
+    C -- "general" --> F9["Memory → General"]
+    C -- "memory" --> F10["Memory (write)"]
 
     style A fill:#4CAF50,stroke:#388E3C,color:#fff
     style B fill:#2196F3,stroke:#1565C0,color:#fff
@@ -73,6 +74,7 @@ flowchart LR
     style F7 fill:#E3F2FD,stroke:#90CAF9
     style F8 fill:#E3F2FD,stroke:#90CAF9
     style F9 fill:#E3F2FD,stroke:#90CAF9
+    style F10 fill:#E0F7FA,stroke:#00ACC1
 ```
 
 ### Feature Workflow (full pipeline)
@@ -81,7 +83,8 @@ flowchart LR
 flowchart TD
     A["🧑 User Prompt"] --> B["🎯 Orchestrator"]
     
-    B --> C["1️⃣ Analyzer\n<i>gather codebase context</i>"]
+    B --> M["0️⃣ Memory\n<i>retrieve feedback & history</i>"]
+    M --> C["1️⃣ Analyzer\n<i>gather codebase context</i>"]
     C --> D["2️⃣ Brainstormer\n<i>discuss specs with user</i>"]
     D --> E["3️⃣ Planner\n<i>create implementation plan</i>"]
     E --> F{{"4️⃣ askQuestions\n&quot;Approve plan?&quot;"}}
@@ -93,6 +96,7 @@ flowchart TD
 
     style A fill:#4CAF50,stroke:#388E3C,color:#fff
     style B fill:#2196F3,stroke:#1565C0,color:#fff
+    style M fill:#E0F7FA,stroke:#00ACC1
     style C fill:#E8F5E9,stroke:#66BB6A
     style D fill:#FFF3E0,stroke:#FFA726
     style E fill:#E3F2FD,stroke:#42A5F5
@@ -110,6 +114,7 @@ flowchart TD
 | Agent | Model | Tools | Role |
 |-------|-------|-------|------|
 | **Orchestrator** | Claude Opus 4.6 | agent, vscode, read | Central brain — classifies tasks, routes to subagents |
+| **Memory** | Claude Opus 4.6 | read, search, edit, vscode | Retrieves relevant feedback & history → Memory Report; writes feedback/history entries |
 | **Analyzer** | Claude Opus 4.6 | read, search, web, execute | Gathers codebase context → Context Report |
 | **Brainstormer** | Claude Opus 4.6 | read, search, web, vscode | Discusses specs with user (via askQuestions) → Specification Report |
 | **Planner** | Claude Opus 4.6 | read, search, web, agent, todo | Creates detailed implementation plan (can call Analyzer) |
@@ -122,15 +127,16 @@ flowchart TD
 
 | Task Type | Phases | Example Prompts |
 |-----------|--------|-----------------|
-| **feature** | Analyze → Brainstorm → Plan → Approve → Implement → Test → Review → Present | "Add a dark mode toggle", "Implement user authentication" |
-| **bugfix** | Analyze → Plan → Approve → Implement → Test → Review → Present | "Fix the login timeout error", "Users can't save settings" |
-| **test** | Analyze → Test → Review → Present | "Add unit tests for the API module", "Run the test suite" |
-| **run** | Plan → Implement → (Test → Review if files changed) → Present | "Run script.py", "Execute this command" |
-| **review** | Analyze → Review → Present | "Review the auth module", "Check for security issues" |
-| **refactor** | Analyze → Plan → Approve → Implement → Test → Review → Present | "Extract helper functions from utils.py", "Simplify the router" |
-| **tdd** | Analyze → Brainstorm → Plan → Approve → Test(Red) → Implement(Green) → Test → Review → Present | "Use TDD to add validation", "Test-driven: add discount calculator" |
-| **explore** | Analyze → Brainstorm → Present | "How does the caching work?", "What's the data flow?" |
-| **general** | General → Present | "What does this function do?", "Fix this typo", "What port does this run on?" |
+| **feature** | Memory → Analyze → Brainstorm → Plan → Approve → Implement → Test → Review → Present | "Add a dark mode toggle", "Implement user authentication" |
+| **bugfix** | Memory → Analyze → Plan → Approve → Implement → Test → Review → Present | "Fix the login timeout error", "Users can't save settings" |
+| **test** | Memory → Analyze → Test → Review → Present | "Add unit tests for the API module", "Run the test suite" |
+| **run** | Memory → Plan → Implement → (Test → Review if files changed) → Present | "Run script.py", "Execute this command" |
+| **review** | Memory → Analyze → Review → Present | "Review the auth module", "Check for security issues" |
+| **refactor** | Memory → Analyze → Plan → Approve → Implement → Test → Review → Present | "Extract helper functions from utils.py", "Simplify the router" |
+| **tdd** | Memory → Analyze → Brainstorm → Plan → Approve → Test(Red) → Implement(Green) → Test → Review → Present | "Use TDD to add validation", "Test-driven: add discount calculator" |
+| **explore** | Memory → Analyze → Brainstorm → Present | "How does the caching work?", "What's the data flow?" |
+| **general** | Memory → General → Present | "What does this function do?", "Fix this typo", "What port does this run on?" |
+| **memory** | Memory (write) → Present | "Remember this", "Don't do that again", "Log this conversation", "Save what we did" |
 
 ## Exception Handling
 

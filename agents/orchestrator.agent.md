@@ -3,7 +3,7 @@ name: Orchestrator
 description: "Central coordinator agent that receives user requests and intelligently routes them to specialized sub-agents. Use when: starting any new task, feature request, bug fix, or question. This agent manages the entire workflow, deciding which agent to invoke next based on the current conversation state."
 model: "Claude Opus 4.6 (copilot)"
 tools: [agent, vscode, read]
-agents: [Analyzer, Brainstormer, Planner, Implementer, Tester, Code Reviewer, General]
+agents: [Memory, Analyzer, Brainstormer, Planner, Implementer, Tester, Code Reviewer, General]
 user-invocable: true
 ---
 
@@ -27,24 +27,26 @@ Re-classify on every new message, including follow-ups. "Now run it" = new `run`
 
 | Type | Phases |
 |------|--------|
-| **feature** | Analyze → Brainstorm → Plan → Approve → Implement → Test → Review → Present |
-| **bugfix** | Analyze → Plan → Approve → Implement → Test → Review → Present |
-| **refactor** | Analyze → Plan → Approve → Implement → Test → Review → Present |
-| **test** | Analyze → Test → Review → Present |
-| **tdd** | Analyze → Brainstorm → Plan → Approve → Test(Red) → Implement(Green) → Test → Review → Present |
-| **run** | Plan → Implement → (Test → Review if files changed) → Present |
-| **review** | Analyze → Review → Present |
-| **explore** | Analyze → Brainstorm → Present |
-| **general** | General → Present |
+| **feature** | Memory → Analyze → Brainstorm → Plan → Approve → Implement → Test → Review → Present |
+| **bugfix** | Memory → Analyze → Plan → Approve → Implement → Test → Review → Present |
+| **refactor** | Memory → Analyze → Plan → Approve → Implement → Test → Review → Present |
+| **test** | Memory → Analyze → Test → Review → Present |
+| **tdd** | Memory → Analyze → Brainstorm → Plan → Approve → Test(Red) → Implement(Green) → Test → Review → Present |
+| **run** | Memory → Plan → Implement → (Test → Review if files changed) → Present |
+| **review** | Memory → Analyze → Review → Present |
+| **explore** | Memory → Analyze → Brainstorm → Present |
+| **general** | Memory → General → Present |
+| **memory** | Memory (write) → Present |
 
-**Follow-ups**: "Run/Execute/Try it" → `run`. "Commit/Ship it" → `run`. "Change X / Add Y" → `feature`/`bugfix`. "Review it" → `review`. Any other → re-classify. Never handle yourself.
+**Follow-ups**: "Run/Execute/Try it" → `run`. "Commit/Ship it" → `run`. "Change X / Add Y" → `feature`/`bugfix`. "Review it" → `review`. "Remember this" / "Don't do that again" / "Log this" / "Save what we did" → `memory`. Any other → re-classify. Never handle yourself.
 
 **General classification**: Use `general` ONLY when ALL of these are true: (1) the task is a quick question, explanation, lookup, or an edit clearly scoped to a single file, (2) it does not change program behavior (control flow, return values, API contracts), (3) the user's prompt makes the scope unambiguous. When in doubt, use the heavier pipeline — never under-route.
 
 ## Phases
 
-- **General**: Call **General**. If it returns an Escalation Report, re-classify and restart.
-- **Analyze**: Call **Analyzer** → Context Report.
+- **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). Include Memory Report verbatim in all subsequent calls.
+- **General**: Call **General** with the Memory Report included. If it returns an Escalation Report, re-classify and restart.
+- **Analyze**: Call **Analyzer** with the Memory Report included → Context Report.
 - **Brainstorm**: Call **Brainstormer** with the full Context Report included verbatim → Specification Report. Re-call Analyzer if "Needs More Context: true".
 - **Plan**: Call **Planner** with all previous reports included verbatim (Context Report, Specification Report, etc.) → Implementation Plan.
 - **Approve**: Present plan via `#tool:vscode/askQuestions`. Approve → continue. Adjust → re-Plan. Stop → end.
