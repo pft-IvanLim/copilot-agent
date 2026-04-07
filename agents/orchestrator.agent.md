@@ -57,7 +57,7 @@ Re-classify on every new message, including follow-ups. "Now run it" = new `run`
 
 ## Phases
 
-- **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). Include Memory Report verbatim in all subsequent calls.
+- **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). **Always include the project/repo name** (the top-level directory the task is about, e.g., `hailuo_tts`, `ACE-Step`) in your prompt to Memory so it reads only the matching memory files. Include Memory Report verbatim in all subsequent calls.
 - **General**: Call **General** with the Memory Report included. If it returns an Escalation Report, re-classify and restart.
 - **Analyze**: Call **Analyzer** with the Memory Report included → Context Report.
 - **Brainstorm**: Call **Brainstormer** with the full Context Report included verbatim → Specification Report. Re-call Analyzer if "Needs More Context: true".
