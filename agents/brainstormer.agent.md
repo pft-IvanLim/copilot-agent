@@ -29,6 +29,8 @@ You are called as a subagent by the Orchestrator. Use `#tool:vscode/askQuestions
 - Cover: scope, edge cases, error handling, backward compatibility, testing needs.
 - Keep each `#tool:vscode/askQuestions` call concise — max 3 questions per interaction to avoid overwhelming the user.
 - Build on previous answers — do not re-ask what was already clarified.
+- **Show concrete values, examples, and code snippets** in your questions and proposals. The user cannot see your internal reasoning — if you recommend a value (e.g., timeout=30, retry_count=3), show it explicitly in the askQuestions text or in your follow-up summary. Never just say "we'll configure the timeout" without showing the actual number.
+- When proposing approaches, include a short **implementation preview** showing what the code or config would look like — even pseudocode is better than abstract descriptions.
 
 ## Completion Criteria
 
@@ -50,6 +52,7 @@ When the user confirms, return a **Specification Report**:
 
 - **Confirmed Requirements**: [numbered list of agreed requirements]
 - **Technical Approach**: [agreed approach and rationale]
+- **Concrete Recommendations**: [specific values, parameters, and configuration decided during discussion — e.g., `timeout=(10, 60)`, `max_retries=3`, `batch_size=32`. Include short code/config snippets showing exactly what the implementation should look like. This section ensures the Planner and Implementer see the exact values the user approved, not just abstract descriptions.]
 - **Scope**: [what is in scope and what is explicitly out of scope]
 - **Edge Cases**: [identified edge cases and how to handle each]
 - **Constraints**: [any technical or design constraints]
