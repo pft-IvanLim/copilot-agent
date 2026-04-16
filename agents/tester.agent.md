@@ -2,7 +2,7 @@
 name: Tester
 description: "Testing agent that runs existing tests, writes new tests for changed functionality, and verifies all tests pass. Use when: validating implementation correctness, catching regressions, or adding test coverage for new features."
 model: "Claude Opus 4.6 (copilot)"
-tools: [read, edit, search, execute, web, todo]
+tools: [read, edit, search, execute, web, todo, vscode]
 user-invocable: false
 ---
 
@@ -62,6 +62,14 @@ For each new or changed piece of functionality:
 Use the todo tool to track testing steps. Mark each as:
 - `in-progress` when you start working on it
 - `completed` immediately when finished
+
+## Milestone Checkpoints
+
+Pause using `#tool:vscode/askQuestions` at these points:
+
+1. **After running existing tests**: "Existing tests: X pass, Y fail. [failure details if any]. Continue to writing new tests, Adjust, or Skip?"
+2. **After writing new tests**: Show a brief description of each test written (requirement covered, test name). Ask: "I've written tests for [requirements list]. Do you have any additional test cases to cover?"
+3. If user says "Continue all", complete without further milestones.
 
 ## Output Format
 

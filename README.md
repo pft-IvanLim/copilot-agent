@@ -115,12 +115,12 @@ flowchart TD
 |-------|-------|-------|------|
 | **Orchestrator** | Claude Opus 4.6 | agent, vscode, read, edit* | Central brain — classifies tasks, routes to subagents |
 | **Memory** | Claude Opus 4.6 | read, search, edit, vscode | Retrieves relevant feedback & history → Memory Report; writes feedback/history entries |
-| **Analyzer** | Claude Opus 4.6 | read, search, web, execute, edit* | Gathers codebase context → Context Report |
+| **Analyzer** | Claude Opus 4.6 | read, search, web, execute, edit*, vscode | Gathers codebase context → Context Report |
 | **Brainstormer** | Claude Opus 4.6 | read, search, web, vscode, edit* | Discusses specs with user (via askQuestions) → Specification Report |
 | **Planner** | Claude Opus 4.6 | read, search, web, agent, todo, edit* | Creates detailed implementation plan (can call Analyzer) |
-| **Implementer** | Claude Opus 4.6 | read, edit, search, execute, web, todo | Senior Engineer — writes production code |
-| **Tester** | Claude Opus 4.6 | read, edit, search, execute, web, todo | Senior QA — sole owner of all test code, runs and writes tests |
-| **Code Reviewer** | GPT-5.4 | read, search, execute, web, edit* | Senior Engineer — reviews code + tests for correctness, bugs, security |
+| **Implementer** | Claude Opus 4.6 | read, edit, search, execute, web, todo, vscode | Senior Engineer — writes production code |
+| **Tester** | Claude Opus 4.6 | read, edit, search, execute, web, todo, vscode | Senior QA — sole owner of all test code, runs and writes tests |
+| **Code Reviewer** | GPT-5.4 | read, search, execute, web, edit*, vscode | Senior Engineer — reviews code + tests for correctness, bugs, security |
 | **General** | Claude Opus 4.6 | read, edit, search, execute, web, todo | Lightweight all-purpose agent for simple tasks, quick questions, atomic edits |
 
 \* `edit` restricted to session log writing (`./memory/chat-logs/`) only
@@ -152,3 +152,67 @@ flowchart TD
 | Sub-agent fails / empty / timeout | Retries once, then asks user |
 | User asks to run/execute | Re-classifies as `run` → Implement |
 | Follow-up after workflow | Re-classifies from Step 0 |
+
+## Parallel Execution
+
+When tasks span multiple independent modules or the plan has independent work packages, the Orchestrator dispatches subagents in parallel instead of sequentially.
+
+### Parallelization Points
+
+| Opportunity | How It Works |
+|---|---|
+| **Parallel Analysis** | Task spans N independent modules → N scoped Analyzer calls in parallel → merge Context Reports |
+| **Parallel Implementation** | Planner tags independent work packages (related work stays in one package) → one Implementer per package in parallel → merge Implementation Reports |
+| **Parallel Test Suites** | Multiple independent test areas → Tester runs them concurrently |
+
+### Parallel Feature Workflow
+
+```mermaid
+flowchart TD
+    A["🧑 User Prompt"] --> B["🎯 Orchestrator"]
+    B --> M["0️⃣ Memory"]
+    M --> PA{"Parallel Analysis?"}
+    PA -- "single module" --> C1["Analyzer"]
+    PA -- "N modules" --> C2["Analyzer×N\n<i>parallel</i>"]
+    C1 --> D["Brainstormer"]
+    C2 --> D
+    D --> E["Planner\n<i>tags work packages</i>"]
+    E --> F{{"Approve plan?"}}
+    F --> PI{"Parallel Implement?"}
+    PI -- "single package" --> G1["Implementer"]
+    PI -- "N packages" --> G2["Implementer×N\n<i>parallel</i>"]
+    G1 --> H["Tester"]
+    G2 --> H
+    H --> I["Code Reviewer"]
+    I -- "issues" --> G1
+    I -- "approved" --> J{{"Done! What next?"}}
+
+    style PA fill:#FF9800,stroke:#EF6C00,color:#fff
+    style PI fill:#FF9800,stroke:#EF6C00,color:#fff
+    style C2 fill:#4CAF50,stroke:#388E3C,color:#fff
+    style G2 fill:#4CAF50,stroke:#388E3C,color:#fff
+```
+
+## Milestone Steering
+
+Instead of waterfall execution, long-running agents pause at milestones via `askQuestions` so the user can steer mid-flight.
+
+| Agent | Milestones |
+|-------|------------|
+| **Analyzer** | After identifying core files (user confirms scope); before finalizing report |
+| **Implementer** | After each plan step or work package |
+| **Tester** | After running existing tests; after writing new tests (shows descriptions, asks for more cases) |
+| **Code Reviewer** | After initial scan (for reviews spanning >5 files) |
+
+At each milestone, the agent shows progress and asks: **"Continue, Adjust, or Skip remaining?"** The user can say "Continue all" to skip future milestones.
+
+## Proactive Feedback Detection
+
+The Orchestrator auto-detects situations where feedback should be recorded — even without explicit "remember this":
+
+- User **repeats or rephrases** the same request
+- User **corrects** agent behavior ("no, I meant...", "that's wrong")
+- A task **restarts** after a failed attempt
+- User expresses **frustration** ("again?", "I already said...")
+
+When detected, the Orchestrator records the correction as a feedback entry and notifies the user.

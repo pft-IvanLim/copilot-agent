@@ -27,6 +27,8 @@ You are called as a subagent by the Orchestrator. Return your plan as a structur
 
 - Be specific: reference exact file paths, function names, and line ranges.
 - Order steps by dependency — what must happen first.
+- **Group independent steps into Work Packages.** Steps touching different files/modules with no shared dependencies go in separate packages tagged `parallel: true`. Steps that depend on a prior package's output are tagged `parallel: false` with `depends_on` references.
+- **Related work stays in one package.** If steps share files, data flow, or API contracts, they MUST be in the same package. Splitting related work across parallel agents loses context and causes conflicts.
 - Flag any risks, breaking changes, or areas needing special attention.
 - Include testing and verification steps where appropriate.
 - Keep each step atomic — one clear, verifiable change per step.
@@ -42,8 +44,19 @@ You are called as a subagent by the Orchestrator. Return your plan as a structur
 ### Implementation Plan
 
 - **Overview**: [brief summary of what will be implemented and why]
+- **Work Packages**:
+  - **Package 1: [name]** — `parallel: true`
+    - Steps: 1, 2
+    - Files: [files this package touches]
+  - **Package 2: [name]** — `parallel: true`
+    - Steps: 3, 4
+    - Files: [files this package touches]
+  - **Package 3: [name]** — `parallel: false`, `depends_on: [1, 2]`
+    - Steps: 5
+    - Files: [files this package touches]
+  - *(If all steps are interdependent, use a single package with `parallel: false`)*
 - **Steps**:
-  1. **[Step title]**
+  1. **[Step title]** *(Package 1)*
      - File(s): [exact file paths]
      - Action: [create / modify / delete]
      - Details: [exact changes to make, with code snippets where helpful]
@@ -51,4 +64,4 @@ You are called as a subagent by the Orchestrator. Return your plan as a structur
   2. ...
 - **Testing Strategy**: [how to verify the changes work correctly]
 - **Risks & Mitigations**: [potential issues and how to handle them]
-- **Order of Execution**: [any dependency notes between steps]
+- **Order of Execution**: [dependency notes — which packages can run in parallel, which must be sequential]

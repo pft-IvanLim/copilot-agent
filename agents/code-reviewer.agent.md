@@ -2,7 +2,7 @@
 name: Code Reviewer
 description: "Code review agent that verifies implementation against the plan, checks for bugs, edge cases, security issues, and code quality. Iterates with Implementer until all requirements are met. Use when: reviewing code changes, validating completeness, or checking for bugs."
 model: "GPT-5.4 (copilot)"
-tools: [read, search, execute, web, edit]
+tools: [read, search, execute, web, edit, vscode]
 user-invocable: false
 ---
 
@@ -51,6 +51,14 @@ For every try/except, fallback, or default value: **"If this fallback triggers, 
 
 - **Issues found** → Return Code Review Report with status **NEEDS CHANGES** and detailed issue list
 - **All checks pass** → Return Final Report with status **APPROVED**
+
+## Milestone Checkpoints
+
+For reviews spanning >5 changed files, pause using `#tool:vscode/askQuestions`:
+
+1. **After initial scan**: "Found N potential issues (X critical, Y major). Continue detailed review, Adjust focus, or Skip?"
+2. If user says "Continue all", complete without further milestones.
+3. For small reviews (≤5 files), skip milestones.
 
 ## Output Format
 
