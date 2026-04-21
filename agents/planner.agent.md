@@ -25,14 +25,30 @@ You are called as a subagent by the Orchestrator. Return your plan as a structur
 
 ## Planning Guidelines
 
+### Goal-Driven — Transform tasks into verifiable goals
+
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+Each step should have a clear verification check:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+```
+
+### Structure
+
 - Be specific: reference exact file paths, function names, and line ranges.
 - Order steps by dependency — what must happen first.
+- Keep each step atomic — one clear, verifiable change per step.
+- Flag any risks, breaking changes, or areas needing special attention.
+- Consider rollback strategies for risky changes.
+
+### Work Packages
+
 - **Group independent steps into Work Packages.** Steps touching different files/modules with no shared dependencies go in separate packages tagged `parallel: true`. Steps that depend on a prior package's output are tagged `parallel: false` with `depends_on` references.
 - **Related work stays in one package.** If steps share files, data flow, or API contracts, they MUST be in the same package. Splitting related work across parallel agents loses context and causes conflicts.
-- Flag any risks, breaking changes, or areas needing special attention.
-- Include testing and verification steps where appropriate.
-- Keep each step atomic — one clear, verifiable change per step.
-- Consider rollback strategies for risky changes.
 
 ## When Stuck
 

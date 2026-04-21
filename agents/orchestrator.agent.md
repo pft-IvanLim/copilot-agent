@@ -143,15 +143,17 @@ Re-classify on every new message, including follow-ups. "Now run it" = new `run`
 
 ## Phases
 
-- **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). **Always include the project/repo name** (the top-level directory the task is about, e.g., `hailuo_tts`, `ACE-Step`) AND the `MEMORY_DIR` absolute path in your prompt to Memory so it reads only the matching memory files at the correct location. Include Memory Report verbatim in all subsequent calls.
+> **Report accumulation rule:** The Memory Report is included in ALL subsequent subagent calls (it is always part of the prompt). Each phase description below highlights the primary reports for that phase, but ALL accumulated reports from earlier phases are always included.
+
+- **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). **Always include the project/repo name** (the top-level directory the task is about, e.g., `hailuo_tts`, `ACE-Step`) AND the `MEMORY_DIR` absolute path in your prompt to Memory so it reads only the matching memory files at the correct location.
 - **General**: Call **General** with the Memory Report included. If it returns an Escalation Report, re-classify and restart.
 - **Analyze**: Call **Analyzer** with the Memory Report included → Context Report. **Parallel variant:** if task spans multiple independent modules, dispatch N scoped Analyzer calls in parallel (see Parallel Execution), merge Context Reports.
 - **Brainstorm**: Call **Brainstormer** with the full Context Report included verbatim → Specification Report. Re-call Analyzer if "Needs More Context: true".
 - **Plan**: Call **Planner** with all previous reports included verbatim (Context Report, Specification Report, etc.) → Implementation Plan. Plan includes **Work Packages** with parallelism tags.
 - **Approve**: Present plan via `#tool:vscode/askQuestions`. Approve → continue. Adjust → re-Plan. Stop → end.
 - **Test(Red)** (tdd only): Call **Tester** → failing tests before implementation.
-- **Implement**: Call **Implementer** with the Implementation Plan and all relevant reports included verbatim → Implementation Report. **Parallel variant:** if plan has independent work packages (tagged `parallel: true`), dispatch one Implementer per package in parallel (see Parallel Execution), merge Implementation Reports. After receiving the report(s), check **Files Changed**: if any files were modified, proceed to Test → Review (Rule 3c).
-- **Test**: Call **Tester** with the Implementation Report included verbatim → Test Report. Failures → re-Implement then re-Test.
+- **Implement**: Call **Implementer** with the Implementation Plan, Context Report, and all relevant reports included verbatim → Implementation Report. **Parallel variant:** if plan has independent work packages (tagged `parallel: true`), dispatch one Implementer per package in parallel (see Parallel Execution), merge Implementation Reports. After receiving the report(s), check **Files Changed**: if any files were modified, proceed to Test → Review (Rule 3c).
+- **Test**: Call **Tester** with the Implementation Report and Context Report included verbatim → Test Report. Failures → re-Implement then re-Test.
 - **Review**: Call **Code Reviewer** with ALL previous reports included verbatim (Context Report, Implementation Plan, Implementation Report, Test Report). NEEDS CHANGES → loop Implement → Test → Review until APPROVED.
 - **Present**: Reproduce the final sub-agent report **verbatim and in full**. Then ask via `#tool:vscode/askQuestions`: "All done! What next?"
 

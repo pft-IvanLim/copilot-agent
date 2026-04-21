@@ -27,7 +27,7 @@ You are called as a subagent by the Orchestrator. You may be called in two conte
 ## Testing Strategy
 
 ### Step 1: Understand Changes
-- Read the Context Report and/or Implementation Report and changed files.
+- Read the Context Report and/or Implementation Report and changed files. Use the Context Report to orient yourself on the codebase architecture.
 - Identify what logic was added, modified, or removed.
 - If this is a standalone test task, read the target code to understand what needs testing.
 

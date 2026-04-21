@@ -18,7 +18,7 @@ You are called as a subagent by the Orchestrator. Review the implementation and 
 
 1. Read the Implementation Plan and Specification Report.
 2. Read the **Test Report** from the Tester.
-3. Review every file changed by the Implementer.
+3. Review every file changed by the Implementer. Use the Context Report to orient yourself on the codebase architecture.
 4. Review new test files written by the Tester for quality and coverage.
 5. Verify each planned step was correctly implemented.
 6. Check for bugs, edge cases, security issues, and code quality problems.
