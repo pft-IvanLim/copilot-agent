@@ -113,17 +113,18 @@ flowchart TD
 
 | Agent | Model | Tools | Role |
 |-------|-------|-------|------|
-| **Orchestrator** | Claude Opus 4.6 | agent, vscode, read, edit* | Central brain — classifies tasks, routes to subagents |
-| **Memory** | Claude Opus 4.6 | read, search, edit, vscode | Retrieves relevant feedback & history → Memory Report; writes feedback/history entries |
-| **Analyzer** | Claude Opus 4.6 | read, search, web, execute, edit*, vscode | Gathers codebase context → Context Report |
+| **Orchestrator** | Claude Opus 4.6 | agent, vscode, read, edit* | Central brain — classifies tasks, routes to subagents, creates live report |
+| **Memory** | Claude Opus 4.6 | read, search, edit, vscode | Retrieves relevant feedback & history → Memory Report; writes feedback/history/session logs |
+| **Analyzer** | Claude Opus 4.6 | read, search, web, edit*, vscode | Gathers codebase context → Context Report |
 | **Brainstormer** | Claude Opus 4.6 | read, search, web, vscode, edit* | Discusses specs with user (via askQuestions) → Specification Report |
 | **Planner** | Claude Opus 4.6 | read, search, web, agent, todo, edit* | Creates detailed implementation plan (can call Analyzer) |
+| **Planner GPT** | GPT-5.4 | read, search, web, agent, todo, edit* | Alternative planner for Extra Careful mode dual-plan cross-review |
 | **Implementer** | Claude Opus 4.6 | read, edit, search, execute, web, todo, vscode | Senior Engineer — writes production code |
 | **Tester** | Claude Opus 4.6 | read, edit, search, execute, web, todo, vscode | Senior QA — sole owner of all test code, runs and writes tests |
 | **Code Reviewer** | GPT-5.4 | read, search, execute, web, edit*, vscode | Senior Engineer — reviews code + tests for correctness, bugs, security |
 | **General** | Claude Opus 4.6 | read, edit, search, execute, web, todo | Lightweight all-purpose agent for simple tasks, quick questions, atomic edits |
 
-\* `edit` restricted to session log writing (`./memory/chat-logs/`) only
+\* `edit` restricted to live report (`live-report.md`) and session log files only — not source code
 
 ## Task Routing
 
@@ -205,6 +206,73 @@ Instead of waterfall execution, long-running agents pause at milestones via `ask
 | **Code Reviewer** | After initial scan (for reviews spanning >5 files) |
 
 At each milestone, the agent shows progress and asks: **"Continue, Adjust, or Skip remaining?"** The user can say "Continue all" to skip future milestones.
+
+> **Note:** Milestone steering is disabled in Fast mode.
+
+## Execution Modes
+
+| Mode | Triggers | Behavior |
+|------|----------|----------|
+| **Default** | *(no keyword)* | Full pipeline + milestones |
+| **Fast** | "fast", "quick", "no milestones", "just do it" | No milestones, concise chat, live-report is primary |
+| **Extra Careful** | "careful", "extra careful", "double check", "dual plan" | Dual-planner cross-review |
+
+### Fast Mode
+
+- No milestones — subagents run to completion uninterrupted
+- Plan Approve still required (safety gate)
+- Chat shows concise summary; full details in live-report
+
+Example: *"fast: add input validation to the login form"*
+
+### Extra Careful Mode
+
+- **Plan** phase dispatches two planners in parallel (Opus 4.6 + GPT-5.4)
+- Each cross-reviews the other's plan
+- Final merged plan produced (or user picks if they diverge)
+- All other phases work as Default
+
+Example: *"extra careful: refactor the authentication module"*
+
+### Extra Careful Mode Workflow
+
+```mermaid
+flowchart TD
+    A["Plan Phase"] --> B{"Dispatch Dual Planners"}
+    B --> C["Planner (Opus 4.6)\n<i>Plan A</i>"]
+    B --> D["Planner GPT (GPT-5.4)\n<i>Plan B</i>"]
+    C --> E["Cross-Review\n<i>Planner reviews Plan B</i>"]
+    D --> F["Cross-Review\n<i>Planner GPT reviews Plan A</i>"]
+    E --> G{"Plans converge?"}
+    F --> G
+    G -- "yes" --> H["Final Merged Plan"]
+    G -- "no" --> I{{"User picks: Plan A / Plan B / Merge"}}
+    I --> H
+    H --> J["Approve → Implement..."]
+
+    style B fill:#FF9800,stroke:#EF6C00,color:#fff
+    style C fill:#4CAF50,stroke:#388E3C,color:#fff
+    style D fill:#9C27B0,stroke:#6A1B9A,color:#fff
+    style G fill:#FF9800,stroke:#EF6C00,color:#fff
+```
+
+## Live Report
+
+Subagent output is often not visible in the VS Code chat window. To ensure full transparency, subagents write to a **live report file** as they work — giving real-time visibility:
+
+- **Path:** `memory/chat-logs/<session-dir>/live-report.md`
+- **Written by:** Each subagent directly (using `edit` restricted to this file only)
+- **When:** During execution, batched with other tool calls (search, read) — zero speed penalty
+- **Append-only:** Previous content is never overwritten
+- **All modes:** Default, Fast, and Extra Careful all write to live-report
+
+The Orchestrator announces the live report path at session start. Open this file to follow what subagents are doing in real time.
+
+In **Fast mode**, the live report is the primary way to see detailed output (chat shows only summaries). In **Default** and **Extra Careful** modes, it provides real-time visibility while subagents work.
+
+### Session Logs (written by subagents)
+
+Each subagent writes its own detailed session log (`<agent-role>-YYYYMMDDHHMMSS.md`) at the end of execution. Subagents hold the full internal context (reasoning, searches, decisions) that would be lost if delegated. These are archival records for debugging and continuity.
 
 ## Proactive Feedback Detection
 
