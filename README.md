@@ -214,8 +214,8 @@ At each milestone, the agent shows progress and asks: **"Continue, Adjust, or Sk
 | Mode | Triggers | Behavior |
 |------|----------|----------|
 | **Default** | *(no keyword)* | Full pipeline + milestones |
-| **Fast** | "fast", "quick", "no milestones", "just do it" | No milestones, concise chat, live-report is primary |
-| **Extra Careful** | "careful", "extra careful", "double check", "dual plan" | Dual-planner cross-review |
+| **Fast** | "fast", "quick", "no milestones", "just do it", "don't overthink", "keep it simple", "straightforward", "simple", "skip discussion", "obvious", "trivial", "ez", "yolo" | No milestones, concise chat, live-report is primary |
+| **Extra Careful** | "careful", "extra careful", "double check", "dual plan", "be thorough", "take your time", "think hard", "review carefully", "make sure", "paranoid", "safety critical", "important", "critical", "high stakes", "double review" | Dual-planner cross-review |
 
 ### Fast Mode
 
@@ -255,6 +255,19 @@ flowchart TD
     style D fill:#9C27B0,stroke:#6A1B9A,color:#fff
     style G fill:#FF9800,stroke:#EF6C00,color:#fff
 ```
+
+## Effort Hint System
+
+The Orchestrator assesses task complexity and passes an **effort level** to each subagent, calibrating depth of reasoning and output verbosity.
+
+| Level | When | Effect |
+|-------|------|--------|
+| `low` | Trivial: lookups, single-line edits, one command | Minimal reasoning, concise output |
+| `medium` | Standard: clear requirements, single-feature, known area | Normal depth, no over-exploration |
+| `high` | Complex: multi-file, ambiguous, unfamiliar code | Deep exploration, edge cases, detailed output |
+| `xhigh` | Critical: security-sensitive, data migrations, core architecture | Maximum thoroughness |
+
+**Defaults:** Default mode → `high` (adjusted down if clearly simple). Fast mode → lean `low`/`medium`. Extra Careful → lean `high`/`xhigh`.
 
 ## Live Report
 
