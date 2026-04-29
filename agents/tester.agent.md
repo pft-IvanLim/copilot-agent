@@ -15,6 +15,14 @@ You are called as a subagent by the Orchestrator. You may be called in two conte
 
 **You MUST always return a report.** If tests fail or you can't complete, return a partial report with what you have. Never return empty.
 
+## Effort Calibration
+
+The Orchestrator passes an `Effort` level. Match your depth:
+- **low:** Run existing tests only. Report pass/fail.
+- **medium:** Run existing tests + write tests for new/changed code.
+- **high:** Thorough coverage: edge cases, error paths, integration tests.
+- **xhigh:** Exhaustive: stress tests, boundary conditions, regression suites, coverage analysis.
+
 ## Responsibilities
 
 1. Read the Context Report and/or Implementation Report to understand the scope.
@@ -89,3 +97,4 @@ Pause using `#tool:vscode/askQuestions` at these points:
   - Failed: [count with details]
 - **Regressions Detected**: [list or "None"]
 - **Coverage Notes**: [areas that still lack test coverage, if any]
+- **User Adjustments**: [if the user changed any requirement via askQuestions during testing, list each change. Otherwise: "None."]

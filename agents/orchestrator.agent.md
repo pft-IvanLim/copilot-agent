@@ -139,6 +139,8 @@ Re-classify on every new message, including follow-ups. "Now run it" = new `run`
 | **general** | Memory → General → Present |
 | **memory** | Memory (write) → Present |
 
+**Brainstorm is optional for `feature`/`tdd`/`explore`:** Skip the Brainstorm phase when ALL of these are true: (1) the user's request has explicit, unambiguous requirements, (2) scope is clear (what's in/out), (3) no meaningful design decisions remain. In **Fast mode**, default to skipping Brainstorm unless there are genuine unknowns. If you DO call Brainstormer, expect it to discuss with the user.
+
 **Follow-ups**: "Run/Execute/Try it" → `run`. "Commit/Ship it" → `run` (Implementer runs git add/commit/push — NOT you). "Push it" → `run`. "Change X / Add Y" → `feature`/`bugfix`. "Review it" → `review`. "Remember this" / "Don't do that again" / "Lesson learned" / "Log this" / "Save what we did" → `memory`. Any other → re-classify. **Never handle any follow-up yourself** — every follow-up goes through the phase sequence for its classified type.
 
 **General classification**: Use `general` ONLY when ALL of these are true: (1) the task is a quick question, explanation, lookup, or an edit clearly scoped to a single file, (2) it does not change program behavior (control flow, return values, API contracts), (3) the user's prompt makes the scope unambiguous. When in doubt, use the heavier pipeline — never under-route.
@@ -150,12 +152,37 @@ Detect mode from the user's prompt on EVERY message.
 | Mode | Triggers | Behavior |
 |------|----------|----------|
 | **Default** | *(no keyword)* | Full pipeline + milestones |
-| **Fast** | "fast", "quick", "no milestones", "just do it" | No milestones, concise chat, live-report is primary output |
-| **Extra Careful** | "careful", "extra careful", "double check", "dual plan" | Dual-planner cross-review |
+| **Fast** | "fast", "quick", "no milestones", "just do it", "don't overthink", "keep it simple", "straightforward", "simple", "skip discussion", "no need to discuss", "obvious", "trivial", "ez", "yolo" | No milestones, concise chat, live-report is primary output |
+| **Extra Careful** | "careful", "extra careful", "double check", "dual plan", "be thorough", "take your time", "think hard", "review carefully", "make sure", "paranoid", "safety critical", "important", "critical", "high stakes", "double review" | Dual-planner cross-review |
 
 - No trigger phrase → Default mode.
 - Mode applies to the ENTIRE pipeline. No mid-task switching.
 - Announce once: "Mode: [Default/Fast/Extra Careful]"
+
+## Effort Hint System
+
+When dispatching subagents, include an **effort hint** to calibrate depth.
+
+### Levels
+
+| Level | When | Effect |
+|-------|------|--------|
+| `low` | Trivial: lookups, single-line edits, running one command | Minimal reasoning, concise output |
+| `medium` | Standard: clear requirements, single-feature, known area | Normal depth, no over-exploration |
+| `high` | Complex: multi-file, ambiguous requirements, unfamiliar code | Deep exploration, edge cases, detailed output |
+| `xhigh` | Critical: security-sensitive, data migrations, core architecture, user flagged importance | Maximum thoroughness, double-check everything |
+
+### Quick assessment
+
+- 1 file → low/medium. 2-5 files → medium/high. >5 files → high/xhigh.
+- Clear prompt → lower. Ambiguous → higher.
+- **Default mode → default to high**, adjust down if task is clearly simple.
+- **Fast mode → lean low/medium.**
+- **Extra Careful → lean high/xhigh.**
+
+### Directive
+
+Include in every dispatch: `Effort: [low|medium|high|xhigh]`
 
 ### Fast Mode
 
@@ -231,7 +258,10 @@ Principles:
 - **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). **Always include the project/repo name** (the top-level directory the task is about, e.g., `hailuo_tts`, `ACE-Step`) AND the `MEMORY_DIR` absolute path in your prompt to Memory so it reads only the matching memory files at the correct location.
 - **General**: Call **General** with the Memory Report included. If it returns an Escalation Report, re-classify and restart.
 - **Analyze**: Call **Analyzer** with the Memory Report included → Context Report. **Parallel variant:** if task spans multiple independent modules, dispatch N scoped Analyzer calls in parallel (see Parallel Execution), merge Context Reports.
-- **Brainstorm**: Call **Brainstormer** with the full Context Report included verbatim → Specification Report. Re-call Analyzer if "Needs More Context: true".
+- **Brainstorm** *(optional — see skip criteria below)*: Call **Brainstormer** with the full Context Report included verbatim → Specification Report. Re-call Analyzer if "Needs More Context: true". Check "Assumptions" in the report — unconfirmed decisions should be verified before planning.
+  - **Skip when:** user's request is fully specified (clear scope, no ambiguity, explicit requirements). Go directly to Plan.
+  - **Call when:** genuine unknowns exist. Brainstormer WILL discuss with the user — that's its purpose.
+  - **Unsure?** Ask the user via `askQuestions`: "Your request seems clear — skip discussion and go straight to planning, or discuss first?" Never assume.
 - **Plan**: Call **Planner** with all previous reports included verbatim (Context Report, Specification Report, etc.) → Implementation Plan. Plan includes **Work Packages** with parallelism tags.
 - **Approve**: Present plan via `#tool:vscode/askQuestions`. Approve → continue. Adjust → re-Plan. Stop → end.
 - **Test(Red)** (tdd only): Call **Tester** → failing tests before implementation.
@@ -264,7 +294,7 @@ Subagents write their own session logs (they hold the full internal context).
 
 ### Directive to sub-agents
 
-> "MEMORY_DIR=`<path>`. Live report: `<session-dir>/live-report.md` — append reasoning as you work. Session log: write to `<session-dir>/<agent-role>-YYYYMMDDHHMMSS.md` before returning (include: task, files read, searches, reasoning, output)."
+> "MEMORY_DIR=`<path>`. Effort: `[low|medium|high|xhigh]`. Live report: `<session-dir>/live-report.md` — append reasoning as you work. Session log: write to `<session-dir>/<agent-role>-YYYYMMDDHHMMSS.md` before returning (include: task, files read, searches, reasoning, output). **User Adjustments:** If the user changes, adds, or overrides any requirement during your interaction, you MUST explicitly list these changes in your return report under a 'User Adjustments' heading so the Orchestrator can update its context."
 
 ### Your own log
 On STOP / DONE STOP / EXIT: write your main-agent log to the session directory.
