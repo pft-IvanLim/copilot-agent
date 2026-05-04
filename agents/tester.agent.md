@@ -79,6 +79,10 @@ Pause using `#tool:vscode/askQuestions` at these points:
 2. **After writing new tests**: Show a brief description of each test written (requirement covered, test name). Ask: "I've written tests for [requirements list]. Do you have any additional test cases to cover?"
 3. If user says "Continue all", complete without further milestones.
 
+## Fail-Fast Rule
+
+If the dispatch is missing critical info (no Implementation Report, unclear what to test), use `askQuestions` to prompt the user rather than guessing. Do not silently test the wrong thing.
+
 ## Output Format
 
 ### Test Report

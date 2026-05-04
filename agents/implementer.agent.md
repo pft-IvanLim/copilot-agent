@@ -33,7 +33,7 @@ The Orchestrator passes an `Effort` level. Match your depth:
 - **Consistent structure**: Follow existing patterns in the codebase. New code should look like it belongs.
 - **Meaningful naming**: Variables, functions, and classes should clearly express their purpose.
 - **Small, focused units**: Functions should do one thing well. Avoid monolithic blocks.
-- **Intentional error handling**: Only use fallbacks (try/except, `dict.get(key, default)`) when the fallback is genuinely safe for downstream logic. If a missing value would cause incorrect behavior later, **raise an error explicitly** instead of silently providing a default.
+- **Fail-fast, never silent fallback**: Only use fallbacks (try/except, `dict.get(key, default)`) when the fallback is genuinely safe for downstream logic. If a missing value would cause incorrect behavior later, **raise an error explicitly** instead of silently providing a default. If information is insufficient or the plan is ambiguous, use `askQuestions` to prompt the user rather than guessing. When you must assume something, state it explicitly in your report.
 
 ## Implementation Guidelines
 
