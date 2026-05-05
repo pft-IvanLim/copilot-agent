@@ -323,6 +323,9 @@ Subagents write their own session logs (they hold the full internal context).
 
 ### Setup (ONCE per session)
 - Determine workspace root → `MEMORY_DIR = <workspace_root>/memory`.
+- Resolve `SESSION_TS` from the system clock in UTC+8 (preferred command via delegated run task): `TZ=Asia/Singapore date '+%Y-%m-%d_%H%M%S'`.
+- Session directory MUST use that exact timestamp and MUST be under `<MEMORY_DIR>/chat-logs/`. Never use date-only paths and never use placeholder `000000` unless the real clock output is midnight.
+- On continuation, reuse the exact prior `<session-dir>` path for the session. Do NOT reconstruct it from date-only matching.
 - Session directory structure:
   ```
   <MEMORY_DIR>/chat-logs/YYYY-MM-DD_HHMMSS_<topic-slug>/
