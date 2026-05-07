@@ -117,7 +117,7 @@ flowchart TD
 | **Memory** | Claude Opus 4.6 | read, search, edit, vscode | Retrieves relevant feedback & history → Memory Report; writes feedback/history/session logs |
 | **Analyzer** | Claude Opus 4.6 | read, search, web, edit*, vscode | Gathers codebase context → Context Report |
 | **Brainstormer** | Claude Opus 4.6 | read, search, web, vscode, edit* | Discusses specs with user (via askQuestions) → Specification Report |
-| **Planner** | Claude Opus 4.6 | read, search, web, agent, todo, edit* | Creates detailed implementation plan (can call Analyzer) |
+| **Planner** | Claude Opus 4.6 | read, search, web, agent, todo, edit* | Creates goal-level implementation plan — specifies WHAT, not HOW (subagents use their own skills) |
 | **Planner GPT** | GPT-5.4 | read, search, web, agent, todo, edit* | Alternative planner for Extra Careful mode dual-plan cross-review |
 | **Implementer** | Claude Opus 4.6 | read, edit, search, execute, web, todo, vscode | Senior Engineer — writes production code |
 | **Tester** | Claude Opus 4.6 | read, edit, search, execute, web, todo, vscode | Senior QA — sole owner of all test code, runs and writes tests |

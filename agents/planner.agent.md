@@ -53,6 +53,23 @@ Each step should have a clear verification check:
 - Flag any risks, breaking changes, or areas needing special attention.
 - Consider rollback strategies for risky changes.
 
+### Delegation Boundary — WHAT vs HOW
+
+Plans tell the Implementer WHAT to achieve. The Implementer decides HOW using its own skills and workspace instructions.
+
+| Plan SHOULD specify | Plan MUST NOT specify |
+|--------------------|-----------------------|
+| Which files to modify and what behavior to add/change | Exact shell commands to run (Implementer chooses) |
+| Constraints and acceptance criteria | Pre-written commit messages (Implementer uses `git-commit-message` skill) |
+| Which workspace skills/instructions apply | Exact `git add` / `git diff` sequences (Implementer follows `git-safety` instructions) |
+| Goal of each step + verification check | Line-by-line code to paste verbatim (unless truly complex logic) |
+
+**Especially for workflow tasks** (git, build, deploy, run):
+- ✅ "Commit only the session-relevant files. Use the `git-commit-message` skill for the message. Follow `git-safety` instructions."
+- ❌ Writing out the exact commit message, exact staged files list, exact git commands.
+
+The Implementer is a skilled agent — trust it to execute. Over-specified plans bypass subagent skills and produce worse results.
+
 ### Work Packages
 
 - **Group independent steps into Work Packages.** Steps touching different files/modules with no shared dependencies go in separate packages tagged `parallel: true`. Steps that depend on a prior package's output are tagged `parallel: false` with `depends_on` references.

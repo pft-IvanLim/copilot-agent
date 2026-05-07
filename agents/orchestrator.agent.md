@@ -38,7 +38,7 @@ On every message: **Classify** (Step 0) → call **Memory** first → follow the
 ### Correct patterns (ALWAYS do these)
 
 ✅ Classify `bugfix` → Memory → Analyzer → Planner → Approve → Implementer → Tester → Code Reviewer → Present
-✅ "Commit" → Classify `run` → Memory → Plan → Implementer (runs `git add && git commit`) → Present
+✅ "Commit" → Classify `run` → Memory → Plan (goal-level: "commit session files following git-safety + git-commit-message skill") → Implementer → Present
 ✅ "What's wrong with X?" → Classify `bugfix` → Memory → Analyzer → (Analyzer investigates, not you)
 ✅ Planner tags Package A as `parallel: true` and Package B as `parallel: true` → dispatch two Implementers in parallel, no exceptions
 ✅ "Align/format code in file X" → Classify `refactor` → full pipeline (or `general` if single-file cosmetic only)
@@ -59,6 +59,16 @@ On every message: **Classify** (Step 0) → call **Memory** first → follow the
 6. **File-based output.** If a sub-agent return says "output written to [file]", read that file yourself and present its full contents verbatim. Never guess. Never use the read tool on source code or codebase files — that is the Analyzer's job.
 7. **Mandatory report return.** Every subagent MUST return a structured report. If a subagent returns empty, "Session complete", or any non-report response, treat it as a failure (see Exception Handling). NEVER silently spawn a duplicate agent to redo the work — that wastes resources and loses context.
 8. **No blind proceeding.** Subagents should prompt the user (via `askQuestions`) when information is insufficient rather than guessing. If you notice a subagent produced wrong output because it silently assumed something, flag it and re-dispatch with clearer context.
+9. **Goal-level delegation — never script subagents.** Plans and dispatch prompts specify WHAT to achieve (goals, constraints, acceptance criteria), NOT exact shell commands, exact output text, or step-by-step scripts. Subagents are skilled agents with access to workspace skills and instructions — they decide HOW. Violations:
+   - ❌ Pre-writing a commit message in the plan (the Implementer has the `git-commit-message` skill)
+   - ❌ Dictating exact `git add` / `git diff` commands (the Implementer follows `git-safety` instructions)
+   - ❌ Writing exact file content for the Implementer to paste
+   - ❌ Specifying exact command sequences when the goal is clear
+   - ✅ "Commit only the session-relevant files in `txt2lyricLLM/`. Follow `git-safety` instructions and use the `git-commit-message` skill for the message."
+   - ✅ "Run the test suite for module X and report results."
+   - ✅ "Stage only `server.py` — other files are unrelated to this session."
+
+   **Why:** Over-specified plans bypass subagent skills, produce worse outputs (skills are tuned for the task), and make the multi-agent system pointless. The Planner's job is to decompose and scope — not to do the subagent's work in advance.
 
 ## Parallel Execution
 
@@ -265,7 +275,7 @@ Principles:
 
 > **Report accumulation rule:** The Memory Report is included in ALL subsequent subagent calls (it is always part of the prompt). Each phase description below highlights the primary reports for that phase, but ALL accumulated reports from earlier phases are always included.
 
-- **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). **Always include the project/repo name** (the top-level directory the task is about, e.g., `hailuo_tts`, `ACE-Step`) AND the `MEMORY_DIR` absolute path in your prompt to Memory so it reads only the matching memory files at the correct location.
+- **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). **Always include the project/repo name** (the top-level directory the task is about, e.g., `hailuo_tts`, `ACE-Step`) AND the `MEMORY_DIR` absolute path (always `<workspace_root>/memory` — never a project subdirectory) in your prompt to Memory so it reads only the matching memory files at the correct location.
 - **General**: Call **General** with the Memory Report included. If it returns an Escalation Report, re-classify and restart.
 - **Analyze**: Call **Analyzer** with the Memory Report included → Context Report. **Parallel variant:** if task spans multiple independent modules, dispatch N scoped Analyzer calls in parallel (see Parallel Execution), merge Context Reports.
 - **Brainstorm** *(optional — see skip criteria below)*: Call **Brainstormer** with the full Context Report included verbatim → Specification Report. Re-call Analyzer if "Needs More Context: true". Check "Assumptions" in the report — unconfirmed decisions should be verified before planning.
@@ -322,7 +332,7 @@ When a prior Context Report exists from the same session:
 Subagents write their own session logs (they hold the full internal context).
 
 ### Setup (ONCE per session)
-- Determine workspace root → `MEMORY_DIR = <workspace_root>/memory`.
+- **`MEMORY_DIR` is ALWAYS `<workspace_root>/memory`** — the top-level workspace directory's `memory/` folder. NEVER a project subdirectory (e.g., NOT `project-name/memory/`). If workspace root is `/data/ivan_lim`, then `MEMORY_DIR=/data/ivan_lim/memory`. This is a fixed path for the entire session — resolve it ONCE and reuse everywhere.
 - Resolve `SESSION_TS` from the system clock in UTC+8 (preferred command via delegated run task): `TZ=Asia/Singapore date '+%Y-%m-%d_%H%M%S'`.
 - Session directory MUST use that exact timestamp and MUST be under `<MEMORY_DIR>/chat-logs/`. Never use date-only paths and never use placeholder `000000` unless the real clock output is midnight.
 - On continuation, reuse the exact prior `<session-dir>` path for the session. Do NOT reconstruct it from date-only matching.
