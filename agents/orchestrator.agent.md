@@ -275,7 +275,7 @@ Principles:
 
 > **Report accumulation rule:** The Memory Report is included in ALL subsequent subagent calls (it is always part of the prompt). Each phase description below highlights the primary reports for that phase, but ALL accumulated reports from earlier phases are always included.
 
-- **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). **Always include the project/repo name** (the top-level directory the task is about, e.g., `hailuo_tts`, `ACE-Step`) AND the `MEMORY_DIR` absolute path (always `<workspace_root>/memory` — never a project subdirectory) in your prompt to Memory so it reads only the matching memory files at the correct location.
+- **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). **Only include the project/repo name** (the top-level directory the task is about, e.g., `hailuo_tts`, `ACE-Step`). The Memory agent self-discovers `MEMORY_DIR` from its own workspace context — do NOT pass a memory path. The Memory Report will include the discovered `MEMORY_DIR` path; use THAT path for all downstream subagent dispatches (session logs, live report, etc.).
 - **General**: Call **General** with the Memory Report included. If it returns an Escalation Report, re-classify and restart.
 - **Analyze**: Call **Analyzer** with the Memory Report included → Context Report. **Parallel variant:** if task spans multiple independent modules, dispatch N scoped Analyzer calls in parallel (see Parallel Execution), merge Context Reports.
 - **Brainstorm** *(optional — see skip criteria below)*: Call **Brainstormer** with the full Context Report included verbatim → Specification Report. Re-call Analyzer if "Needs More Context: true". Check "Assumptions" in the report — unconfirmed decisions should be verified before planning.
@@ -332,7 +332,7 @@ When a prior Context Report exists from the same session:
 Subagents write their own session logs (they hold the full internal context).
 
 ### Setup (ONCE per session)
-- **`MEMORY_DIR` is ALWAYS `<workspace_root>/memory`** — the top-level workspace directory's `memory/` folder. NEVER a project subdirectory (e.g., NOT `project-name/memory/`). If workspace root is `/data/ivan_lim`, then `MEMORY_DIR=/data/ivan_lim/memory`. This is a fixed path for the entire session — resolve it ONCE and reuse everywhere.
+- **`MEMORY_DIR` comes from the Memory Report.** The Memory agent discovers and returns it. Use the `MEMORY_DIR` value from the Memory Report for ALL downstream operations. Do NOT compute or guess it yourself.
 - Resolve `SESSION_TS` from the system clock in UTC+8 (preferred command via delegated run task): `TZ=Asia/Singapore date '+%Y-%m-%d_%H%M%S'`.
 - Session directory MUST use that exact timestamp and MUST be under `<MEMORY_DIR>/chat-logs/`. Never use date-only paths and never use placeholder `000000` unless the real clock output is midnight.
 - On continuation, reuse the exact prior `<session-dir>` path for the session. Do NOT reconstruct it from date-only matching.
