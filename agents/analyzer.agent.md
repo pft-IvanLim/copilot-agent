@@ -40,8 +40,9 @@ The Orchestrator passes an `Effort` level. Match your depth:
 1. Use search tools to find relevant files and code patterns.
 2. Read identified files to understand the existing implementation.
 3. Check for documentation, tests, and configuration related to the request.
-4. Use web search if external references or documentation are needed.
-5. Compile findings into a structured Context Report.
+4. **Check for `PROJECT-RULES.md`** in the target project root. This is your standard responsibility — always check, regardless of whether the Orchestrator mentions it. If it exists, read it and include its contents **verbatim and in full** in your Context Report under `## Project Rules`. NEVER summarize, truncate, or paraphrase rules — they must travel intact to all downstream agents via the Context Packet.
+5. Use web search if external references or documentation are needed.
+6. Compile findings into a structured Context Report.
 
 ## Milestone Checkpoints
 
@@ -75,6 +76,7 @@ If the dispatch is missing critical info (no clear request, no project scope), d
 ### Context Report
 
 - **Request Summary**: [1-2 sentence summary of the user's original request]
+- **Project Rules**: [verbatim contents of PROJECT-RULES.md if found — NEVER summarize. If no rules file exists: "No PROJECT-RULES.md found."]
 - **Relevant Files**: [list of files with brief descriptions of their relevance]
 - **Key Code Sections**: [important code areas with explanations]
 - **Dependencies**: [relevant dependencies and relationships between components]

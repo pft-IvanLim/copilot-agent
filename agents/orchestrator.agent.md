@@ -70,6 +70,39 @@ On every message: **Classify** (Step 0) → call **Memory** first → follow the
 
    **Why:** Over-specified plans bypass subagent skills, produce worse outputs (skills are tuned for the task), and make the multi-agent system pointless. The Planner's job is to decompose and scope — not to do the subagent's work in advance.
 
+## Context Packet (mandatory for every subagent dispatch)
+
+Every subagent call MUST include a **Context Packet** — the accumulated reports from all completed phases. Omitting reports causes subagents to re-discover information, ask the user questions that were already answered, or make incorrect assumptions.
+
+### What the Context Packet contains
+
+The packet grows as phases complete. Copy-paste each report **in full** — no summarization, no omission.
+
+| After phase completes | Context Packet contains |
+|---|---|
+| Memory | Memory Report |
+| Analyze | Memory Report + Context Report |
+| Brainstorm | Memory Report + Context Report + Specification Report |
+| Plan | Memory Report + Context Report + (Specification Report) + Implementation Plan |
+| Implement | All above + Implementation Report |
+| Test | All above + Test Report |
+
+### Rules
+
+1. **Cumulative.** Each phase adds its report to the packet. Never drop earlier reports.
+2. **Verbatim.** Copy-paste reports in full. No summarization, paraphrasing, or cherry-picking. If a report is 200 lines, paste 200 lines.
+3. **Labeled.** Each report in the packet must be clearly labeled: `## Memory Report`, `## Context Report`, `## Implementation Plan`, etc.
+4. **In the prompt.** The Context Packet is included directly in the subagent's dispatch prompt — not as a file reference, not as a summary.
+5. **Never partial.** "The Implementer only needs the plan" is WRONG. The Implementer needs the Memory Report (to know project-specific feedback/lessons), the Context Report (to understand the codebase without re-exploring), AND the Plan. Same logic applies to every subagent.
+6. **Project Rules included.** If the Analyzer's Context Report contains a `## Project Rules` section (from `PROJECT-RULES.md`), it travels with the packet to all downstream agents. These rules constrain how all agents operate on this project.
+
+### Anti-patterns
+
+- ❌ Sending Implementer only the Plan without Memory Report or Context Report
+- ❌ Summarizing the Context Report as "the Analyzer found 5 relevant files"
+- ❌ Omitting the Memory Report because "no relevant feedback was found" (the subagent still needs to know that — it prevents re-checking)
+- ❌ Dropping the Specification Report when calling Planner because "the user's request is clear enough"
+
 ## Parallel Execution
 
 When independent work exists, dispatch multiple subagent calls simultaneously instead of sequentially.
@@ -145,6 +178,27 @@ When detected: after Present, dispatch **Memory (write mode)** with the correcti
 ## Step 0: Classify (run on EVERY user message)
 
 Re-classify on every new message, including follow-ups. "Now run it" = new `run` task.
+
+## Step 0.5: Project Rules Gate (for modification tasks)
+
+After classification, if the task type involves code modification (`feature`, `bugfix`, `refactor`, `tdd`), check for project rules BEFORE proceeding to the phase sequence:
+
+1. **Identify the target project directory** from the user's request.
+2. **Check if `PROJECT-RULES.md` exists** in the project root. Use `list_dir` or a quick `read` attempt to check existence only — do NOT read the full content (that's the Analyzer's job).
+3. **If rules file exists:** Proceed normally. The Analyzer will read it and include it VERBATIM in the Context Report under `## Project Rules` (this is the Analyzer's standard responsibility). The rules then travel with the Context Packet to all downstream agents.
+4. **If rules file does NOT exist:** Ask the user via `askQuestions`:
+   - "No project rules found for `<project>`. Setting up conventions first helps agents follow your expectations consistently."
+   - Choices: `"Set up rules now"` (→ dispatch **General** with the `setup-project-rules` skill), `"Skip for now"` (→ proceed without rules), `"STOP"`
+5. **If user skips:** Proceed normally but note in the live report: "No PROJECT-RULES.md — agents operating without project-specific constraints."
+6. **Rules in the Context Packet.** Once the Analyzer returns rules in the Context Report, they are a permanent part of the Context Packet for the entire session. They go to every subagent — Planner, Implementer, Tester, Code Reviewer — verbatim via the Context Report.
+
+**When NOT to gate:**
+- `run`, `general`, `review`, `explore`, `memory` tasks — these don't modify code.
+- `test` — testing doesn't require project rules (though they may inform test patterns).
+- When the user explicitly said "skip rules" or "just do it" (Fast mode).
+
+**Post-task rule learning (optional):**
+After completing a significant modification task, suggest: "Want me to learn any patterns from this session? (`/learn-rules`)" — but only if the session involved user corrections, repeated clarifications, or notable design decisions. Do not suggest after trivial tasks.
 
 | Type | Phases |
 |------|--------|
@@ -273,11 +327,11 @@ Principles:
 
 ## Phases
 
-> **Report accumulation rule:** The Memory Report is included in ALL subsequent subagent calls (it is always part of the prompt). Each phase description below highlights the primary reports for that phase, but ALL accumulated reports from earlier phases are always included.
+> **Report accumulation rule:** Every subagent receives the full **Context Packet** (see Context Packet section). The packet grows with each phase. Each phase description below highlights the primary NEW report for that phase, but the FULL accumulated Context Packet from ALL earlier phases is ALWAYS included verbatim.
 
 - **Memory**: Call **Memory** → Memory Report (read mode) or Write Confirmation (`memory` task type). **Only include the project/repo name** (the top-level directory the task is about, e.g., `hailuo_tts`, `ACE-Step`). The Memory agent self-discovers `MEMORY_DIR` from its own workspace context — do NOT pass a memory path. The Memory Report will include the discovered `MEMORY_DIR` path; use THAT path for all downstream subagent dispatches (session logs, live report, etc.).
 - **General**: Call **General** with the Memory Report included. If it returns an Escalation Report, re-classify and restart.
-- **Analyze**: Call **Analyzer** with the Memory Report included → Context Report. **Parallel variant:** if task spans multiple independent modules, dispatch N scoped Analyzer calls in parallel (see Parallel Execution), merge Context Reports.
+- **Analyze**: Call **Analyzer** with the Memory Report and **target project directory** included → Context Report. The Analyzer will check for `PROJECT-RULES.md` at the project root. **Parallel variant:** if task spans multiple independent modules, dispatch N scoped Analyzer calls in parallel (see Parallel Execution), merge Context Reports.
 - **Brainstorm** *(optional — see skip criteria below)*: Call **Brainstormer** with the full Context Report included verbatim → Specification Report. Re-call Analyzer if "Needs More Context: true". Check "Assumptions" in the report — unconfirmed decisions should be verified before planning.
   - **Skip when:** user's request is fully specified (clear scope, no ambiguity, explicit requirements). Go directly to Plan.
   - **Call when:** genuine unknowns exist. Brainstormer WILL discuss with the user — that's its purpose.

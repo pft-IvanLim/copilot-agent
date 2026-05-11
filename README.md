@@ -297,3 +297,43 @@ The Orchestrator auto-detects situations where feedback should be recorded — e
 - User expresses **frustration** ("again?", "I already said...")
 
 When detected, the Orchestrator records the correction as a feedback entry and notifies the user.
+
+## Project Rules — Self-Learning Convention System
+
+Every project can have a `PROJECT-RULES.md` at its root that documents conventions, constraints, and learned patterns. This file is automatically read by the Analyzer and included in the Context Packet for all downstream agents.
+
+### How It Works
+
+```mermaid
+flowchart TD
+    A["User: modify project X"] --> B["Orchestrator classifies task"]
+    B --> C{"PROJECT-RULES.md\nexists?"}
+    C -- "yes" --> D["Analyzer reads rules\n→ included in Context Report"]
+    C -- "no" --> E{{"Ask user:\nSet up rules now?"}}
+    E -- "Set up rules" --> F["/setup-project-rules\n<i>grill user about conventions</i>"]
+    E -- "Skip" --> G["Proceed without rules"]
+    F --> D
+    D --> H["All agents follow rules"]
+    H --> I["After task: suggest /learn-rules"]
+
+    style C fill:#FF9800,stroke:#EF6C00,color:#fff
+    style E fill:#FCE4EC,stroke:#EF5350
+    style F fill:#4CAF50,stroke:#388E3C,color:#fff
+```
+
+### Skills
+
+| Skill | Purpose | When to Use |
+|-------|---------|-------------|
+| `/setup-project-rules` | Interview user about project conventions, create `PROJECT-RULES.md` | First time working on a project, or to update conventions |
+| `/learn-rules` | Analyze chat logs & feedback → propose rule additions | After significant work sessions, or periodically |
+
+### The Self-Learning Loop
+
+1. **Setup:** `/setup-project-rules` grills the user → creates initial rules
+2. **Enforce:** Analyzer reads rules → all agents follow them via Context Packet
+3. **Correct:** User corrections are recorded as feedback (via Memory)
+4. **Learn:** `/learn-rules` analyzes feedback & chat logs → proposes new rules
+5. **Improve:** Accepted rules are appended to `PROJECT-RULES.md` → back to step 2
+
+This creates a **closed loop** where the agent system continuously improves its understanding of each project's conventions.
