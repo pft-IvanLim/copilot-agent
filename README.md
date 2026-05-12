@@ -10,6 +10,14 @@ A multi-agent workflow for VS Code Copilot that automates the full development l
 - **Stronger tool boundaries**: each agent only gets the tools it needs, which improves reliability and reduces accidental misuse.
 - **Supports real development workflows**: feature work, bug fixes, test-only tasks, reviews, refactors, TDD, exploration, and command execution are all handled explicitly.
 
+## Design Principles
+
+- **Concise agent files**: The Orchestrator is ~130 lines, subagents are 60-130 lines. Long system prompts cause attention degradation — critical rules get skipped. Keep agents focused.
+- **Visibility awareness**: Subagent text is NOT visible in VS Code Copilot chat. All subagents write progress to `live-report.md` for user visibility, and return structured reports to the Orchestrator.
+- **Two-output requirement**: Every subagent produces TWO outputs — a live report entry (for the user) and a structured report (for the Orchestrator). The live report does NOT replace the structured report.
+- **Verbatim relay**: The Orchestrator never paraphrases subagent reports. It copies them verbatim to prevent hallucinated information.
+- **Selective HTML**: Agent-to-agent reports use markdown. Saved artifacts (plans, specs, reviews) use HTML for richer layout when the content is complex.
+
 ## Quick Start
 
 ### 1. Clone
@@ -124,7 +132,7 @@ flowchart TD
 | **Code Reviewer** | GPT-5.4 | read, search, execute, web, edit*, vscode | Senior Engineer — reviews code + tests for correctness, bugs, security |
 | **General** | Claude Opus 4.6 | read, edit, search, execute, web, todo | Lightweight all-purpose agent for simple tasks, quick questions, atomic edits |
 
-\* `edit` restricted to live report (`live-report.md`) and session log files only — not source code
+\* `edit` restricted to live report (`live-report.md`) and session log/artifact files only — not source code
 
 ## Task Routing
 
@@ -269,34 +277,46 @@ The Orchestrator assesses task complexity and passes an **effort level** to each
 
 **Defaults:** Default mode → `high` (adjusted down if clearly simple). Fast mode → lean `low`/`medium`. Extra Careful → lean `high`/`xhigh`.
 
-## Live Report
+## Live Report & Visibility
 
-Subagent output is often not visible in the VS Code chat window. To ensure full transparency, subagents write to a **live report file** as they work — giving real-time visibility:
+Subagent text output is **NOT visible** in the VS Code Copilot chat window. The live report is how users see what subagents are doing:
 
 - **Path:** `memory/chat-logs/<session-dir>/live-report.md`
 - **Written by:** Each subagent directly (using `edit` restricted to this file only)
-- **When:** During execution, batched with other tool calls (search, read) — zero speed penalty
+- **When:** During execution, batched with other tool calls — zero speed penalty
 - **Append-only:** Previous content is never overwritten
-- **All modes:** Default, Fast, and Extra Careful all write to live-report
 
-The Orchestrator announces the live report path at session start. Open this file to follow what subagents are doing in real time.
+Every subagent knows:
+1. Their text output goes to the Orchestrator, NOT to the user's chat
+2. The live report is the ONLY way the user sees progress in real-time
+3. `askQuestions` interactions ARE visible to the user
+4. The structured report (returned to Orchestrator) and live report entries are BOTH required
 
-In **Fast mode**, the live report is the primary way to see detailed output (chat shows only summaries). In **Default** and **Extra Careful** modes, it provides real-time visibility while subagents work.
+The Orchestrator announces the live report path at session start. Open this file to follow progress.
 
-### Session Logs (written by subagents)
+### Output Formats
 
-Each subagent writes its own detailed session log (`<agent-role>-YYYYMMDDHHMMSS.md`) at the end of execution. Subagents hold the full internal context (reasoning, searches, decisions) that would be lost if delegated. These are archival records for debugging and continuity.
+| Output | Format | Why |
+|--------|--------|-----|
+| Live report | Markdown | VS Code preview auto-refreshes |
+| Agent-to-agent reports | Markdown | Consumed by downstream agents |
+| Artifacts on disk (`artifacts/`) | **HTML** | User opens in browser; richer layout |
+| Session logs (`agent-logs/`) | **HTML** | User reads post-session; benefits from structure |
+| Chat ("Present" phase) | Markdown | Chat doesn't render HTML |
 
-## Proactive Feedback Detection
+### Session Logs
 
-The Orchestrator auto-detects situations where feedback should be recorded — even without explicit "remember this":
+Each subagent writes its own session log (`<agent-role>-YYYYMMDDHHMMSS.html`) for archival/debugging. HTML format enables richer structure for post-session reading.
 
-- User **repeats or rephrases** the same request
-- User **corrects** agent behavior ("no, I meant...", "that's wrong")
-- A task **restarts** after a failed attempt
-- User expresses **frustration** ("again?", "I already said...")
+## Subagent Report Protocol
 
-When detected, the Orchestrator records the correction as a feedback entry and notifies the user.
+Every subagent MUST return a structured report as its final message. The Orchestrator enforces this:
+
+1. If a subagent returns empty or "Session complete", the Orchestrator retries once with an explicit reminder
+2. If still empty, the Orchestrator asks the user
+3. The Orchestrator NEVER fabricates what it thinks a report said — it reads file-based output or copies the returned report verbatim
+
+This prevents the hallucination problem where the Orchestrator invents information that wasn't in any subagent's actual output.
 
 ## Project Rules — Self-Learning Convention System
 
@@ -337,3 +357,23 @@ flowchart TD
 5. **Improve:** Accepted rules are appended to `PROJECT-RULES.md` → back to step 2
 
 This creates a **closed loop** where the agent system continuously improves its understanding of each project's conventions.
+
+## Changelog
+
+<details>
+<summary><strong>2025-05-12 — v2: Orchestrator Rewrite & Visibility Fix</strong></summary>
+
+**Problems addressed:**
+1. Orchestrator (430 lines) was too long — model skipped instructions, didn't create chat-logs, didn't ask subagents for reports
+2. Orchestrator fabricated subagent output instead of reading actual reports (hallucination)
+3. Subagents didn't know their text was invisible in VS Code Copilot chat — wrote to live-report as supplementary instead of primary user output
+4. No HTML output option for complex artifacts
+
+**Changes:**
+- **Orchestrator rewritten**: 430 → 129 lines (70% reduction). Critical rules at top, redundant sections removed, reinforcement at bottom.
+- **Visibility section added to all 9 subagents**: Each agent now knows text is invisible, live-report is for users, structured report is for Orchestrator, both required.
+- **Report mandate strengthened**: "Never return empty or Session complete" in every subagent. Orchestrator dispatch includes mandatory visibility reminder text.
+- **HTML artifacts**: Saved artifacts (plans, specs, reviews) and session logs use HTML for richer layout. Agent-to-agent reports and live-report stay markdown. Chat ("Present" phase) stays markdown.
+- **README updated**: Added Design Principles, Subagent Report Protocol, Output Formats, and this Changelog.
+
+</details>
