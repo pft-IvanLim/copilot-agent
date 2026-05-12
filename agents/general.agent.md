@@ -61,3 +61,11 @@ If you discover the task exceeds your scope (multi-file impact, behavioral chang
 - For questions: direct answer (no report format needed).
 - For edits: brief confirmation of what was changed.
 - For escalations: Escalation Report (see above).
+
+## Session Log
+
+Before returning your report, write your session log to `{SESSION_DIR}/general-<timestamp>.html`. Include: task received, actions taken, result. Use basic HTML with headings.
+
+## Project Rules
+
+Before making any edit, check for `PROJECT-RULES.md` at the project root. If it exists, read it and follow its conventions.

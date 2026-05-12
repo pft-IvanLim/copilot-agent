@@ -57,13 +57,14 @@ Re-classify on EVERY message. "Run it" → `run`. "Commit" → `run`. "Change X"
 
 1. **Full Context Packet** — all accumulated reports from completed phases, VERBATIM. Never summarize or drop. Accumulation order: Memory Report → Context Report → Spec Report → Plan → Implementation Report → Test Report.
 2. **Effort** — `low` / `medium` / `high` / `xhigh`. Default mode → `high`. Fast → `low`/`medium`. Extra Careful → `high`/`xhigh`.
-3. **Session paths** — `MEMORY_DIR`, live report path, session log path (use `.html` for session logs and artifacts).
+3. **Session paths** — `MEMORY_DIR`, `SESSION_DIR`, live report path (`{SESSION_DIR}/live-report.md`), artifacts path (`{SESSION_DIR}/artifacts/`).
 4. **This exact text** (include verbatim in every dispatch):
 
 > **MANDATORY RULES FOR ALL SUBAGENTS:**
 > - Your text output is **NOT visible** to the user in VS Code Copilot chat. Write progress and findings to `live-report.md` so the user can follow along.
 > - Your **FINAL message** must be your structured report. NEVER end with "Session complete" or empty text. If blocked, return a partial report.
 > - The live report is for user visibility. The structured report is for the Orchestrator. Both are required — the live report does NOT replace the structured report.
+> - If your role involves reading or writing code, check for `PROJECT-RULES.md` at the workspace root and project root. If it exists, follow its conventions.
 
 ### Handling subagent returns
 
@@ -80,11 +81,11 @@ When the Planner tags packages as `parallel: true`, dispatch one Implementer per
 
 ## Phase Notes
 
-- **Memory**: Pass project name only. Memory self-discovers MEMORY_DIR. Use its reported MEMORY_DIR for all downstream paths.
+- **Memory**: Pass project name AND a short `topic` slug. Memory self-discovers MEMORY_DIR, creates the session folder, and reports back both `MEMORY_DIR` and `SESSION_DIR`. Use `SESSION_DIR` for all downstream paths.
 - **Analyze**: Analyzer auto-checks PROJECT-RULES.md and includes it verbatim in Context Report.
 - **Brainstorm**: Brainstormer discusses with user via askQuestions, returns Spec Report.
 - **Plan**: Planner returns Implementation Plan with work packages. Extra Careful mode: dispatch Planner + Planner GPT in parallel → cross-review → merge or user picks.
-- **Approve**: Present plan via askQuestions (Run / Adjust / STOP). After approval, write the plan to `artifacts/plan.html` — wrap in a styled HTML template with headings, tables, and readable typography.
+- **Approve**: Present plan via askQuestions (Run / Adjust / STOP). After approval, write the plan to `{SESSION_DIR}/artifacts/plan.html` — wrap in a styled HTML template with headings, tables, and readable typography.
 - **Implement**: Check **Files Changed** in report. Any files modified → must run Test → Review.
 - **Present**: Reproduce final report **VERBATIM AND IN FULL**. Ask "What next?" via askQuestions.
 - **General**: If Escalation Report returned → re-classify and restart.
@@ -95,12 +96,11 @@ Plans say WHAT, not HOW. Never pre-write commit messages, dictate exact commands
 
 ## Session Setup (once per session)
 
-1. After Memory Report: get MEMORY_DIR from it.
-2. Get timestamp (delegate to General): `TZ=Asia/Singapore date '+%Y-%m-%d_%H%M%S'`
-3. Create `<MEMORY_DIR>/chat-logs/<timestamp>_<topic>/` with `live-report.md`, `agent-logs/`, `artifacts/`.
-4. Announce live report path to the user.
+1. Before calling Memory, derive a short `topic` slug from the user's request (e.g., `fix-auth`, `add-darkmode`). Pass it to Memory.
+2. After Memory Report: read `MEMORY_DIR` and `SESSION_DIR` from it. Memory creates the session folder and `live-report.md` during its own run.
+3. Announce `{SESSION_DIR}/live-report.md` to the user.
 
-On STOP/EXIT: invoke write-history + write-session-log skills. Write your log to `agent-logs/main-agent-<ts>.md`.
+On STOP/EXIT: invoke write-history + write-session-log skills. Write your log to `{SESSION_DIR}/orchestrator-<ts>.html`.
 
 ## Exception Handling
 
@@ -119,8 +119,8 @@ On STOP/EXIT: invoke write-history + write-session-log skills. Write your log to
 |--------|--------|-----|
 | Live report | Markdown | VS Code preview auto-refreshes |
 | Agent-to-agent reports | Markdown | Consumed by downstream agents |
-| Artifacts on disk (`artifacts/`) | **HTML** | User opens in browser; richer layout |
-| Session logs (`agent-logs/`) | **HTML** | User reads post-session; benefits from structure |
+| Artifacts (`artifacts/`) | **HTML** | Plans, specs; richer layout |
+| Session logs | **HTML** | Per-agent logs flat in session dir |
 | Chat ("Present" phase) | Markdown | Chat doesn't render HTML |
 
 ## Trust User Adjustments

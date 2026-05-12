@@ -282,7 +282,7 @@ The Orchestrator assesses task complexity and passes an **effort level** to each
 Subagent text output is **NOT visible** in the VS Code Copilot chat window. The live report is how users see what subagents are doing:
 
 - **Path:** `memory/chat-logs/<session-dir>/live-report.md`
-- **Written by:** Each subagent directly (using `edit` restricted to this file only)
+- **Written by:** Memory creates it at session start; all subsequent subagents append to it
 - **When:** During execution, batched with other tool calls — zero speed penalty
 - **Append-only:** Previous content is never overwritten
 
@@ -300,13 +300,13 @@ The Orchestrator announces the live report path at session start. Open this file
 |--------|--------|-----|
 | Live report | Markdown | VS Code preview auto-refreshes |
 | Agent-to-agent reports | Markdown | Consumed by downstream agents |
-| Artifacts on disk (`artifacts/`) | **HTML** | User opens in browser; richer layout |
-| Session logs (`agent-logs/`) | **HTML** | User reads post-session; benefits from structure |
+| Artifacts (`artifacts/`) | **HTML** | Plans, specs, reviews; user opens in browser |
+| Session logs | **HTML** | Per-agent logs flat in session dir |
 | Chat ("Present" phase) | Markdown | Chat doesn't render HTML |
 
 ### Session Logs
 
-Each subagent writes its own session log (`<agent-role>-YYYYMMDDHHMMSS.html`) for archival/debugging. HTML format enables richer structure for post-session reading.
+Each subagent writes its session log (`<role>-<timestamp>.html`) directly in the session folder alongside `live-report.md`. HTML artifacts (plan, spec) go in `artifacts/` subfolder.
 
 ## Subagent Report Protocol
 
@@ -359,6 +359,24 @@ flowchart TD
 This creates a **closed loop** where the agent system continuously improves its understanding of each project's conventions.
 
 ## Changelog
+
+<details>
+<summary><strong>2025-05-12 — v3: Session Path Sync, Session Logs, PROJECT-RULES</strong></summary>
+
+**Problems addressed:**
+1. Memory wrote `live-report.md` to a stale path because session folder didn't exist yet (General created it later)
+2. Subagents never wrote session logs (HTML) — permission existed but no trigger
+3. `run`/`general` task types bypassed Analyzer, so PROJECT-RULES.md was never checked
+4. Changelog was stale after v2 edits
+
+**Changes:**
+- **Memory now owns session setup**: generates timestamp, creates `{MEMORY_DIR}/chat-logs/{ts}_{topic}/`, writes `live-report.md`, reports `SESSION_DIR`. No more General timestamp step.
+- **Session log instruction added to all 8 subagents**: each writes `{SESSION_DIR}/<role>-<ts>.html` before returning.
+- **PROJECT-RULES.md check added to Implementer + General**: they now read and follow project rules even when Analyzer is skipped.
+- **Memory rules renumbered**: `0a.` removed, rules now 0–7 cleanly.
+- **Orchestrator Session Setup simplified**: 4 steps → 3 (derive topic, read SESSION_DIR from Memory, announce).
+
+</details>
 
 <details>
 <summary><strong>2025-05-12 — v2: Orchestrator Rewrite & Visibility Fix</strong></summary>

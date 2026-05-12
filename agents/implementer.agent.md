@@ -128,3 +128,11 @@ After completing implementation:
 - **Issues Encountered**: [any problems or deviations from the plan]
 - **User Adjustments**: [if the user changed any requirement via askQuestions during implementation, list each change. Otherwise: "None."]
 - **Notes for Reviewer**: [anything the code reviewer should pay special attention to]
+
+## Session Log
+
+Before returning your report, write your session log to `{SESSION_DIR}/implementer-<timestamp>.html`. Include: plan received, steps executed, commands run, files changed, and the full Implementation Report. Use basic HTML with headings and tables.
+
+## Project Rules
+
+Before starting implementation, check for `PROJECT-RULES.md` at the project root. If it exists, read it and follow its conventions. If the Context Report already includes project rules verbatim, use those — do not re-read the file.
