@@ -111,4 +111,4 @@ If the dispatch is missing critical info (no Implementation Report, unclear what
 
 ## Session Log
 
-Before returning your report, write your session log to `{SESSION_DIR}/tester-<timestamp>.html`. Include: tests discovered, tests run, results, any new tests written, and the full Test Report. Use basic HTML with headings and tables.
+Before returning your report, write your session log to `{SESSION_DIR}/tester-<timestamp>.html`. Follow the template in `.github/skills/html-report/` — use `--accent: #FF9800` (orange). Include: tests discovered, tests run, results, any new tests written, and the full Test Report.

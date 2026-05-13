@@ -100,7 +100,7 @@ Plans say WHAT, not HOW. Never pre-write commit messages, dictate exact commands
 2. After Memory Report: read `MEMORY_DIR` and `SESSION_DIR` from it. Memory creates the session folder and `live-report.md` during its own run.
 3. Announce `{SESSION_DIR}/live-report.md` to the user.
 
-On STOP/EXIT: invoke write-history + write-session-log skills. Write your log to `{SESSION_DIR}/orchestrator-<ts>.html`.
+On STOP/EXIT: invoke write-history + write-session-log skills. Write your log to `{SESSION_DIR}/orchestrator-<ts>.html` using the template in `.github/skills/html-report/` with `--accent: #3F51B5` (indigo).
 
 ## Exception Handling
 

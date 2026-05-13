@@ -121,4 +121,4 @@ The Implementer is a skilled agent — trust it to execute. Over-specified plans
 
 ## Session Log
 
-Before returning your report, write your session log to `{SESSION_DIR}/planner-<timestamp>.html`. Include: context received, decisions made, assumptions, and the full Implementation Plan. Use basic HTML with headings and tables.
+Before returning your report, write your session log to `{SESSION_DIR}/planner-<timestamp>.html`. Follow the template in `.github/skills/html-report/` — use `--accent: #9C27B0` (purple). Include: context received, decisions made, assumptions, and the full Implementation Plan.

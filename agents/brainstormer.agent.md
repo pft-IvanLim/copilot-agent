@@ -107,4 +107,4 @@ When the user confirms, return a **Specification Report**:
 
 ## Session Log
 
-Before returning your report, write your session log to `{SESSION_DIR}/brainstormer-<timestamp>.html`. Include: questions asked, user answers, decisions made, and the full Specification Report. Use basic HTML with headings and tables.
+Before returning your report, write your session log to `{SESSION_DIR}/brainstormer-<timestamp>.html`. Follow the template in `.github/skills/html-report/` — use `--accent: #00BCD4` (cyan). Include: questions asked, user answers, decisions made, and the full Specification Report.

@@ -131,7 +131,7 @@ After completing implementation:
 
 ## Session Log
 
-Before returning your report, write your session log to `{SESSION_DIR}/implementer-<timestamp>.html`. Include: plan received, steps executed, commands run, files changed, and the full Implementation Report. Use basic HTML with headings and tables.
+Before returning your report, write your session log to `{SESSION_DIR}/implementer-<timestamp>.html`. Follow the template in `.github/skills/html-report/` — use `--accent: #4CAF50` (green). Include: plan received, steps executed, commands run, files changed, and the full Implementation Report.
 
 ## Project Rules
 

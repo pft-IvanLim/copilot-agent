@@ -104,4 +104,4 @@ Each step should have a clear verification check:
 
 ## Session Log
 
-Before returning your report, write your session log to `{SESSION_DIR}/planner-gpt-<timestamp>.html`. Include: context received, decisions made, assumptions, and the full Implementation Plan. Use basic HTML with headings and tables.
+Before returning your report, write your session log to `{SESSION_DIR}/planner-gpt-<timestamp>.html`. Follow the template in `.github/skills/html-report/` — use `--accent: #9C27B0` (purple). Include: context received, decisions made, assumptions, and the full Implementation Plan.

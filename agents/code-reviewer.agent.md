@@ -101,4 +101,4 @@ If the dispatch is missing critical info (no Implementation Report, no file list
 
 ## Session Log
 
-Before returning your report, write your session log to `{SESSION_DIR}/code-reviewer-<timestamp>.html`. Include: files reviewed, issues found, final verdict, and the full Review Report. Use basic HTML with headings and tables.
+Before returning your report, write your session log to `{SESSION_DIR}/code-reviewer-<timestamp>.html`. Follow the template in `.github/skills/html-report/` — use `--accent: #F44336` (red). Include: files reviewed, issues found, final verdict, and the full Review Report.

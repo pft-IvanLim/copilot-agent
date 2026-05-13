@@ -93,4 +93,4 @@ If the dispatch is missing critical info (no clear request, no project scope), d
 
 ## Session Log
 
-Before returning your report, write your session log to `{SESSION_DIR}/analyzer-<timestamp>.html`. Include: request received, files explored, key findings, and the full Context Report. Use basic HTML with headings and tables.
+Before returning your report, write your session log to `{SESSION_DIR}/analyzer-<timestamp>.html`. Follow the template in `.github/skills/html-report/` — use `--accent: #2196F3` (blue). Include: request received, files explored, key findings, and the full Context Report.

@@ -64,7 +64,7 @@ If you discover the task exceeds your scope (multi-file impact, behavioral chang
 
 ## Session Log
 
-Before returning your report, write your session log to `{SESSION_DIR}/general-<timestamp>.html`. Include: task received, actions taken, result. Use basic HTML with headings.
+Before returning your report, write your session log to `{SESSION_DIR}/general-<timestamp>.html`. Follow the template in `.github/skills/html-report/` — use `--accent: #607D8B` (grey). Include: task received, actions taken, result.
 
 ## Project Rules
 

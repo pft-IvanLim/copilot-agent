@@ -308,6 +308,8 @@ The Orchestrator announces the live report path at session start. Open this file
 
 Each subagent writes its session log (`<role>-<timestamp>.html`) directly in the session folder alongside `live-report.md`. HTML artifacts (plan, spec) go in `artifacts/` subfolder.
 
+All HTML files use the shared template from `.github/skills/html-report/` — featuring a color-coded banner per role, severity tags, collapsible sections, and styled tables. See the skill's `template.html` for the full CSS.
+
 ## Subagent Report Protocol
 
 Every subagent MUST return a structured report as its final message. The Orchestrator enforces this:
@@ -359,6 +361,23 @@ flowchart TD
 This creates a **closed loop** where the agent system continuously improves its understanding of each project's conventions.
 
 ## Changelog
+
+<details>
+<summary><strong>2025-05-12 — v4: HTML Report Template & Directory Fixes</strong></summary>
+
+**Problems addressed:**
+1. Session logs were plain unstyled HTML — no CSS, no hierarchy, bare `border="1"` tables
+2. `agent-logs/` subdirectory referenced everywhere but never existed; session logs are actually flat
+3. PROJECT-RULES.md check skipped even in `feature` flows — Analyzer had it as an optional Approach step
+4. Orchestrator's own session log extension was `.md` instead of `.html`
+
+**Changes:**
+- **`html-report` skill created** (`skills/html-report/`): shared CSS template with color-coded banner per role, severity tags, collapsible sections, styled tables. All subagents reference it.
+- **Directory structure fixed**: session logs flat in `{SESSION_DIR}/`, artifacts in `{SESSION_DIR}/artifacts/`. Memory creates `artifacts/` during setup and reports `ARTIFACTS_DIR`.
+- **PROJECT-RULES.md promoted to Hard Rule 4** in Analyzer (was Approach step 4). Also added to mandatory dispatch text so all subagents get reminded.
+- **Minor fixes**: Analyzer edit restriction wording, Brainstormer session log phrasing, Orchestrator log extension.
+
+</details>
 
 <details>
 <summary><strong>2025-05-12 — v3: Session Path Sync, Session Logs, PROJECT-RULES</strong></summary>
